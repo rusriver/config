@@ -53,7 +53,7 @@ func (cfg *Config) ListConfig(path string) ([]*Config, error) {
 	}
 	
 	l2 := make([]*Config, 0, len(l))
-	for v := range l {
+	for _, v := range l {
 		l2 = append(l2, &Config{Root: v})
 	}
 	
@@ -246,9 +246,8 @@ func (cfg *Config) Int(path string) (int, error) {
 	}
 	switch n := n.(type) {
 	case float64:
-		// encoding/json unmarshals numbers into floats, so we compare
-		// the string representation to see if we can return an int.
-		if i := int(n); fmt.Sprint(i) == fmt.Sprint(n) {
+		// encoding/json unmarshals numbers into floats
+		if i := int(n); float64(i) == n {
 			return i, nil
 		} else {
 			return 0, fmt.Errorf("Value can't be converted to int: %v", n)
@@ -277,6 +276,74 @@ func (c *Config) UInt(path string, defaults ...int) int {
 		return def
 	}
 	return 0
+}
+
+// ListInt returns an []int according to a dotted path.
+func (cfg *Config) ListInt(path string) ([]int, error) {
+	l, err := cfg.List(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	l2 := make([]int, 0, len(l))
+	for _, n := range l {
+		var v int
+		switch n := n.(type) {
+		case float64:
+			// encoding/json unmarshals numbers into floats
+			if i := int(n); float64(i) == n {
+				v = i
+			} else {
+				return l2, fmt.Errorf("Value can't be converted to int: %v", n)
+			}
+		case int:
+			v = n
+		case string:
+			i, err := strconv.ParseInt(n, 10, 0)
+			if err != nil {
+				return l2, err
+			}
+			v = int(i)
+		}
+		l2 = append(l2, v)
+	}
+	
+	return l2, nil
+}
+
+// MapInt returns a map[string]int according to a dotted path.
+func (cfg *Config) MapInt(path string) (map[string]int, error) {
+	var err error
+	
+	m, err := cfg.Map(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	m2 := make(map[string]int, len(m))
+	for k, n := range m {
+		var v int
+		switch n := n.(type) {
+		case float64:
+			// encoding/json unmarshals numbers into floats
+			if i := int(n); float64(i) == n {
+				v = i
+			} else {
+				return m2, fmt.Errorf("Value can't be converted to int: %v", n)
+			}
+		case int:
+			v = n
+		case string:
+			i, err := strconv.ParseInt(n, 10, 0)
+			if err != nil {
+				return m2, err
+			}
+			v = int(i)
+		}
+		m2[k] = v
+	}
+	
+	return m2, nil
 }
 
 // List returns a []interface{} according to a dotted path.
