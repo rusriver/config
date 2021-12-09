@@ -36,13 +36,28 @@ func (cfg *Config) Get(path string) (*Config, error) {
 	return nil, nil
 }
 
-// Get returns a nested config according to a dotted path.
+// Config returns a nested config according to a dotted path.
 func (cfg *Config) Config(path string) (*Config, error) {
 	n, err := get(cfg.Root, path)
 	if err != nil {
 		return nil, err
 	}
 	return &Config{Root: n}, nil
+}
+
+// ListConfig returns a nested []*Config according to a dotted path.
+func (cfg *Config) ListConfig(path string) ([]*Config, error) {
+	l, err := cfg.List(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	l2 := make([]*Config, 0, len(l))
+	for el := range l {
+		l2 = append(l2, &Config{Root: el})
+	}
+	
+	return l2, nil
 }
 
 // Set a nested config according to a dotted path.
