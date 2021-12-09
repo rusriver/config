@@ -31,9 +31,14 @@ func (c *Config) Error() error {
 	return c.lastErr
 }
 
-// Get returns a nested config according to a dotted path.
+// DEPRECATED, use Config() instead.
 func (cfg *Config) Get(path string) (*Config, error) {
-	n, err := Get(cfg.Root, path)
+	return nil, nil
+}
+
+// Get returns a nested config according to a dotted path.
+func (cfg *Config) Config(path string) (*Config, error) {
+	n, err := get(cfg.Root, path)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +150,7 @@ func getKeys(source interface{}, base ...string) [][]string {
 
 // Bool returns a bool according to a dotted path.
 func (cfg *Config) Bool(path string) (bool, error) {
-	n, err := Get(cfg.Root, path)
+	n, err := get(cfg.Root, path)
 	if err != nil {
 		return false, err
 	}
@@ -174,7 +179,7 @@ func (c *Config) UBool(path string, defaults ...bool) bool {
 
 // Float64 returns a float64 according to a dotted path.
 func (cfg *Config) Float64(path string) (float64, error) {
-	n, err := Get(cfg.Root, path)
+	n, err := get(cfg.Root, path)
 	if err != nil {
 		return 0, err
 	}
@@ -205,7 +210,7 @@ func (c *Config) UFloat64(path string, defaults ...float64) float64 {
 
 // Int returns an int according to a dotted path.
 func (cfg *Config) Int(path string) (int, error) {
-	n, err := Get(cfg.Root, path)
+	n, err := get(cfg.Root, path)
 	if err != nil {
 		return 0, err
 	}
@@ -246,7 +251,7 @@ func (c *Config) UInt(path string, defaults ...int) int {
 
 // List returns a []interface{} according to a dotted path.
 func (cfg *Config) List(path string) ([]interface{}, error) {
-	n, err := Get(cfg.Root, path)
+	n, err := get(cfg.Root, path)
 	if err != nil {
 		return nil, err
 	}
@@ -272,7 +277,7 @@ func (c *Config) UList(path string, defaults ...[]interface{}) []interface{} {
 
 // Map returns a map[string]interface{} according to a dotted path.
 func (cfg *Config) Map(path string) (map[string]interface{}, error) {
-	n, err := Get(cfg.Root, path)
+	n, err := get(cfg.Root, path)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +303,7 @@ func (c *Config) UMap(path string, defaults ...map[string]interface{}) map[strin
 
 // String returns a string according to a dotted path.
 func (cfg *Config) String(path string) (string, error) {
-	n, err := Get(cfg.Root, path)
+	n, err := get(cfg.Root, path)
 	if err != nil {
 		return "", err
 	}
@@ -327,7 +332,7 @@ func (c *Config) UString(path string, defaults ...string) string {
 
 // Duration returns a time.Duration according to a dotted path.
 func (cfg *Config) Duration(path string) (time.Duration, error) {
-	n, err := Get(cfg.Root, path)
+	n, err := get(cfg.Root, path)
 	if err != nil {
 		return 0, err
 	}
@@ -369,7 +374,7 @@ func (c *Config) Copy(dottedPath ...string) (*Config, error) {
 	var root = ""
 
 	if len(path) > 0 {
-		if cfg, err = c.Get(path); err != nil {
+		if cfg, err = c.Config(path); err != nil {
 			return nil, err
 		}
 	}
@@ -393,7 +398,7 @@ func (c *Config) Extend(cfg *Config) (*Config, error) {
 	keys := getKeys(cfg.Root)
 	for _, key := range keys {
 		k := strings.Join(key, ".")
-		i, err := Get(cfg.Root, k)
+		i, err := get(cfg.Root, k)
 		if err != nil {
 			return nil, err
 		}
@@ -411,8 +416,8 @@ func typeMismatch(expected string, got interface{}) error {
 
 // Fetching -------------------------------------------------------------------
 
-// Get returns a child of the given value according to a dotted path.
-func Get(cfg interface{}, path string) (interface{}, error) {
+// get returns a child of the given value according to a dotted path.
+func get(cfg interface{}, path string) (interface{}, error) {
 	parts := splitKeyOnParts(path)
 	// Normalize path.
 	for k, v := range parts {
