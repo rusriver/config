@@ -53,11 +53,26 @@ func (cfg *Config) ListConfig(path string) ([]*Config, error) {
 	}
 	
 	l2 := make([]*Config, 0, len(l))
-	for el := range l {
-		l2 = append(l2, &Config{Root: el})
+	for v := range l {
+		l2 = append(l2, &Config{Root: v})
 	}
 	
 	return l2, nil
+}
+
+// MapConfig returns a nested map[string]*Config according to a dotted path.
+func (cfg *Config) MapConfig(path string) (map[string]*Config, error) {
+	m, err := cfg.Map(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	m2 := make(map[string]*Config, len(m))
+	for k, v := range m {
+		m2[k] = &Config{Root: v}
+	}
+	
+	return m2, nil
 }
 
 // Set a nested config according to a dotted path.
