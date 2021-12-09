@@ -3,6 +3,8 @@
 Package config provides convenient access methods to configuration
 stored as JSON or YAML.
 
-This is a fork of the A fork of [olebedev/config](https://github.com/olebedev/config),
+This is a fork of [olebedev/config](https://github.com/olebedev/config),
 which in turn is a fork of [original version](https://github.com/moraes/config).
+
+It has incompatibilities with the original(s), and quite an extended functionality.
 
