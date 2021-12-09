@@ -260,6 +260,8 @@ func (cfg *Config) ListFloat64(path string) ([]float64, error) {
 				return l2, err
 			}
 			v = i
+		default:
+			return l2, typeMismatch("float64, int or string", n)
 		}
 		l2 = append(l2, v)
 	}
@@ -291,6 +293,8 @@ func (cfg *Config) MapFloat64(path string) (map[string]float64, error) {
 				return m2, err
 			}
 			v = i
+		default:
+			return m2, typeMismatch("float64, int or string", n)
 		}
 		m2[k] = v
 	}
@@ -364,6 +368,8 @@ func (cfg *Config) ListInt(path string) ([]int, error) {
 				return l2, err
 			}
 			v = int(i)
+		default:
+			return l2, typeMismatch("float64, int or string", n)
 		}
 		l2 = append(l2, v)
 	}
@@ -399,6 +405,8 @@ func (cfg *Config) MapInt(path string) (map[string]int, error) {
 				return m2, err
 			}
 			v = int(i)
+		default:
+			return m2, typeMismatch("float64, int or string", n)
 		}
 		m2[k] = v
 	}
@@ -485,6 +493,52 @@ func (c *Config) UString(path string, defaults ...string) string {
 		return def
 	}
 	return ""
+}
+
+// ListString returns an []string according to a dotted path.
+func (cfg *Config) ListString(path string) ([]string, error) {
+	l, err := cfg.List(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	l2 := make([]string, 0, len(l))
+	for _, n := range l {
+		var v string
+		switch n := n.(type) {
+		case string:
+			v = n
+		default:
+			v = fmt.Sprintf("%v", n)
+		}
+		l2 = append(l2, v)
+	}
+	
+	return l2, nil
+}
+
+// MapString returns a map[string]string according to a dotted path.
+func (cfg *Config) MapString(path string) (map[string]string, error) {
+	var err error
+	
+	m, err := cfg.Map(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	m2 := make(map[string]string, len(m))
+	for k, n := range m {
+		var v string
+		switch n := n.(type) {
+		case string:
+			v = n
+		default:
+			v = fmt.Sprintf("%v", n)
+		}
+		m2[k] = v
+	}
+	
+	return m2, nil
 }
 
 // Duration returns a time.Duration according to a dotted path.
