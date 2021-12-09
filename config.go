@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -322,6 +323,35 @@ func (c *Config) UString(path string, defaults ...string) string {
 		return def
 	}
 	return ""
+}
+
+// Duration returns a time.Duration according to a dotted path.
+func (cfg *Config) Duration(path string) (time.Duration, error) {
+	n, err := Get(cfg.Root, path)
+	if err != nil {
+		return 0, err
+	}
+	if str, ok := n.(string); ok {
+		dur, err := time.ParseDuration(str)
+		if err == nil {
+			return dur, nil
+		}
+	}
+	return 0, typeMismatch("string", n)
+}
+
+// UDuration returns a time.Duration according to a dotted path or default or zero duration
+func (cfg *Config) UDuration(path string, defaults ...time.Duration) (time.Duration) {
+	dur, err := cfg.Duration(path)
+	
+	if err == nil {
+		return dur
+	}
+
+	for _, def := range defaults {
+		return def
+	}
+	return 0
 }
 
 // Copy returns a deep copy with given path or without.
