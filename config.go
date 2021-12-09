@@ -238,6 +238,66 @@ func (c *Config) UFloat64(path string, defaults ...float64) float64 {
 	return float64(0)
 }
 
+// ListFloat64 returns an []float64 according to a dotted path.
+func (cfg *Config) ListFloat64(path string) ([]float64, error) {
+	l, err := cfg.List(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	l2 := make([]float64, 0, len(l))
+	for _, n := range l {
+		var v float64
+		switch n := n.(type) {
+		case float64:
+			// encoding/json unmarshals numbers into floats
+			v = n
+		case int:
+			v = float64(n)
+		case string:
+			i, err := strconv.ParseFloat(n, 64)
+			if err != nil {
+				return l2, err
+			}
+			v = i
+		}
+		l2 = append(l2, v)
+	}
+	
+	return l2, nil
+}
+
+// MapFloat64 returns a map[string]float64 according to a dotted path.
+func (cfg *Config) MapFloat64(path string) (map[string]float64, error) {
+	var err error
+	
+	m, err := cfg.Map(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	m2 := make(map[string]float64, len(m))
+	for k, n := range m {
+		var v float64
+		switch n := n.(type) {
+		case float64:
+			// encoding/json unmarshals numbers into floats
+			v = n
+		case int:
+			v = float64(n)
+		case string:
+			i, err := strconv.ParseFloat(n, 64)
+			if err != nil {
+				return m2, err
+			}
+			v = i
+		}
+		m2[k] = v
+	}
+	
+	return m2, nil
+}
+
 // Int returns an int according to a dotted path.
 func (cfg *Config) Int(path string) (int, error) {
 	n, err := get(cfg.Root, path)
