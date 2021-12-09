@@ -570,6 +570,58 @@ func (cfg *Config) UDuration(path string, defaults ...time.Duration) (time.Durat
 	return 0
 }
 
+// ListDuration returns an []time.Duration according to a dotted path.
+func (cfg *Config) ListDuration(path string) ([]time.Duration, error) {
+	l, err := cfg.List(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	l2 := make([]time.Duration, 0, len(l))
+	for _, n := range l {
+		var v time.Duration
+		if str, ok := n.(string); ok {
+			dur, err := time.ParseDuration(str)
+			if err == nil {
+				v = dur
+				goto OK
+			}
+		}
+		return l2, typeMismatch("string", n)
+		OK:
+		l2 = append(l2, v)
+	}
+	
+	return l2, nil
+}
+
+// MapDuration returns a map[string]time.Duration according to a dotted path.
+func (cfg *Config) MapDuration(path string) (map[string]time.Duration, error) {
+	var err error
+	
+	m, err := cfg.Map(path)
+	if err != nil {
+		return nil, err
+	}
+	
+	m2 := make(map[string]time.Duration, len(m))
+	for k, n := range m {
+		var v time.Duration
+		if str, ok := n.(string); ok {
+			dur, err := time.ParseDuration(str)
+			if err == nil {
+				v = dur
+				goto OK
+			}
+		}
+		return m2, typeMismatch("string", n)
+		OK:
+		m2[k] = v
+	}
+	
+	return m2, nil
+}
+
 // Copy returns a deep copy with given path or without.
 func (c *Config) Copy(dottedPath ...string) (*Config, error) {
 	toJoin := []string{}
