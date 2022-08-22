@@ -8,3 +8,8 @@ which in turn is a fork of [original version](https://github.com/moraes/config).
 
 It has incompatibilities with the original(s), and quite an extended functionality.
 
+TODO:
+
+- Serk support
+- provide extensive examples of use, suitable for copy-paste
+- write tests, and make them work

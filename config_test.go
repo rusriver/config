@@ -359,6 +359,10 @@ func TestUMethods(t *testing.T) {
 
 }
 
+/*
+// Copy() was removed. In case you need it, I suggest to use any true deepcopy/clone algorithm,
+// instead of using marshal/unmarshal trick for this. But the very reason to remove it, was that
+// it was only used in Extend(), it was redundant there, so no longer used anywhere anyway.
 func TestCopy(t *testing.T) {
 	cfg, err := ParseYaml(yamlString)
 	if err != nil {
@@ -386,6 +390,7 @@ func TestCopy(t *testing.T) {
 	yaml4, _ := RenderYaml(cfg4.Root)
 	expect(t, yaml3, yaml4)
 }
+*/
 
 func TestExtendError(t *testing.T) {
 	cfg, err := ParseYaml(yamlString)
@@ -399,8 +404,8 @@ map:
   - true
 `)
 	var nilCfg *Config
-	extended, err := cfg.Extend(cfg2)
-	expect(t, extended, nilCfg)
+	err = cfg.ExtendBy(cfg2)
+	expect(t, cfg, nilCfg)
 	expect(t, err.Error(), "Invalid list index at \"list.key0\"")
 }
 
@@ -416,7 +421,7 @@ list:
   - extend
 `)
 
-	extended, err := cfg.Extend(cfg2)
+	err = cfg.ExtendBy(cfg2)
 	expect(t, err, nil)
 	// immutable
 	expect(t, cfg.UBool("map.key0"), true)
@@ -426,10 +431,10 @@ list:
 	expect(t, cfg2.UInt("list.8", 7), 7)
 
 	// result
-	expect(t, extended.UString("map.key0"), "extend")
-	expect(t, extended.UString("map.key8"), "value8")
-	expect(t, extended.UString("list.0"), "extend")
-	expect(t, extended.UString("list.8"), "item8")
+	expect(t, cfg.UString("map.key0"), "extend")
+	expect(t, cfg.UString("map.key8"), "value8")
+	expect(t, cfg.UString("list.0"), "extend")
+	expect(t, cfg.UString("list.8"), "item8")
 }
 
 func TestComplexYamlKeys(t *testing.T) {
