@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 )
 
 // ParseJson reads a JSON configuration from the given string.
@@ -12,7 +12,7 @@ func ParseJson(c string) (*Config, error) {
 
 // ParseJsonFile reads a JSON configuration from the given filename.
 func ParseJsonFile(filename string) (*Config, error) {
-	c, err := ioutil.ReadFile(filename)
+	c, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"io/ioutil"
+	"os"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -18,7 +18,7 @@ func ParseYaml(c string) (*Config, error) {
 
 // ParseYamlFile reads a YAML configuration from the given filename.
 func ParseYamlFile(filename string) (*Config, error) {
-	c, err := ioutil.ReadFile(filename)
+	c, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
