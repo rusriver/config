@@ -10,6 +10,7 @@ It has incompatibilities with the original(s), and quite an extended functionali
 
 TODO:
 
+- test ExtendBy_v2() (not tested yet, at all)
 - Serk support
 - provide extensive examples of use, suitable for copy-paste
 - write tests, and make them work
