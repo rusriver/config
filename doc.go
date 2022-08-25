@@ -22,8 +22,8 @@ Let's start with a simple YAML file config.yml:
 
 We can parse it using ParseYaml(), which will return a *Config instance on
 success:
-    
-    file, err := ioutil.ReadFile("config.yml")
+
+    file, err := os.ReadFile("config.yml")
     if err != nil {
 		panic(err)
     }
@@ -53,7 +53,7 @@ requested type.
 A nested configuration can be fetched using Get(). Here we get a new *Config
 instance with a subset of the configuration:
 
-    cfg, err := cfg.Get("development")
+    cfg, err := cfg.GetNestedConfig("development")
 
 Then the inner values are fetched relatively to the subset:
 
