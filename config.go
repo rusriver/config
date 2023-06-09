@@ -26,6 +26,7 @@ func (c *Config) LastError() error {
 }
 
 func (c *Config) P(path string) *Config {
+	c.resetErrOkState()
 	var err error
 	c.Root, err = get(c.Root, path)
 	if err != nil {
@@ -34,12 +35,19 @@ func (c *Config) P(path string) *Config {
 	return c
 }
 
+func (c *Config) resetErrOkState() {
+	c.lastError = nil
+	if c.ok != nil {
+		*c.ok = true
+	}
+	if c.err != nil {
+		*c.err = nil
+	}
+
+}
+
 func (c *Config) handleError(err error) {
 	if err == nil {
-		c.lastError = nil
-		if c.ok != nil {
-			*c.ok = true
-		}
 		return
 	} else {
 		c.lastError = err
@@ -57,6 +65,7 @@ func (c *Config) handleError(err error) {
 
 // Sets a nested config according to a dotted path.
 func (c *Config) Set(path string, v interface{}) {
+	c.resetErrOkState()
 	err := set(c.Root, path, v)
 	if err != nil {
 		c.handleError(err)
@@ -64,24 +73,28 @@ func (c *Config) Set(path string, v interface{}) {
 }
 
 func (c *Config) U() (c2 *Config) {
+	c.resetErrOkState()
 	c2 = c.Copy()
 	c.dontPanicFlag = true
 	return c2
 }
 
 func (c *Config) NotU() (c2 *Config) {
+	c.resetErrOkState()
 	c2 = c.Copy()
 	c.dontPanicFlag = false
 	return c2
 }
 
 func (c *Config) Ok(okRef *bool) (c2 *Config) {
+	c.resetErrOkState()
 	c2 = c.Copy()
 	c.ok = okRef
 	return c2
 }
 
 func (c *Config) E(err *error) (c2 *Config) {
+	c.resetErrOkState()
 	c2 = c.Copy()
 	c.err = err
 	return c2
