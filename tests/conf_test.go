@@ -9,8 +9,14 @@ import (
 )
 
 func Test_ConfigInheritance_1_0(t *testing.T) {
-	result := (&config.InitContext{}).FromFile("conf-test-files/config.yaml").LoadWithParenting()
+	var err error
+	conf := (&config.InitContext{}).
+		FromFile("conf-test-files/config.yaml").
+		E(&err).
+		LoadWithParenting()
 
-	bb, _ := json.MarshalIndent(result.Root, "", "    ")
+	fmt.Println(err)
+
+	bb, _ := json.MarshalIndent(conf, "", "    ")
 	fmt.Println(string(bb))
 }

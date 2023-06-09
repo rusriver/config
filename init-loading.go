@@ -107,24 +107,24 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 	if ic.Logger == nil {
 		ic.Logger = &log.Logger
 	}
-	ic.Logger.Info().Msgf("reading the config file(s)...")
+	ic.Logger.Info().Msgf("ziPdTJw: reading the config file(s)...")
 	baseDir := filepath.Dir(ic.FileName)
 	filesAlreadyRead := map[string]bool{}
 	isRoot := true
 	var readNext func(configFileName string) *Config
 	readNext = func(configFileName string) *Config {
-		ic.Logger.Info().Msgf("reading the config file '%v'...", configFileName)
+		ic.Logger.Info().Msgf("EZWLkX: reading the config file '%v'...", configFileName)
 		filesAlreadyRead[configFileName] = true
 		var err error
 		c1 := (&InitContext{FileName: configFileName}).E(&err).Load()
 		if err != nil {
-			ic.Logger.Err(err).Msgf("config.ParseYamlFile('%v') failed", configFileName)
+			ic.Logger.Err(err).Msgf("fYmNdkUt: config.ParseYamlFile('%v') failed", configFileName)
 			panic(err)
 		}
 		if isRoot {
 			isRoot = false
-			id := c1.P("id").String()
-			ic.Logger.Info().Msgf("config file '%v' id=%v", configFileName, id)
+			id := c1.E(&err).P("id").String()
+			ic.Logger.Info().Msgf("KPPEY7ZW: config file '%v' id='%v' err='%v'", configFileName, id, err)
 		}
 		parents := []string{}
 		p := c1.P("parent").String()
@@ -137,7 +137,7 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 		for _, configFileName := range parents {
 			path := baseDir + "/" + configFileName
 			if filesAlreadyRead[path] {
-				ic.Logger.Err(err).Msgf("config file loop: the file '%v' already read", path)
+				ic.Logger.Err(err).Msgf("AweL9D: config file loop: the file '%v' already read", path)
 				panic(err)
 			}
 			cN := readNext(path)
@@ -149,6 +149,6 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 	result = readNext(ic.FileName)
 	result.Set([]string{"parent"}, nil)
 	result.Set([]string{"parents"}, nil)
-	ic.Logger.Info().Msg("reading the config file(s) OK")
+	ic.Logger.Info().Msg("K2aUDgz: reading the config file(s) OK")
 	return
 }
