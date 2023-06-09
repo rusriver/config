@@ -50,7 +50,15 @@ func extend_v2(c1 interface{}, c2 interface{}) interface{} {
 
 			for i2, v2 := range c2v {
 				switch v2v := v2.(type) {
-				case map[string]interface{}, []interface{}:
+				case map[string]interface{}:
+					if c1v[i2] == nil {
+						c1v[i2] = make(map[string]any)
+					}
+					c1v[i2] = extend_v2(c1v[i2], v2v)
+				case []interface{}:
+					if c1v[i2] == nil {
+						c1v[i2] = make([]any, 0)
+					}
 					c1v[i2] = extend_v2(c1v[i2], v2v)
 				default:
 					c1v[i2] = v2

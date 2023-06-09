@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // parseYamlFile reads a YAML configuration from the given filename.
