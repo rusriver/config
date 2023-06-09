@@ -25,8 +25,8 @@ U*() functions are removed. Instead, get-type functions behave this way:
 - If neither set, it panics on error (to be intercepted as exception);
 - In either case, the default value is returned;
 
-Path now is specified always in P(), and type parsing happens as separate function. E.g.,
-instead of
+Path now is specified always in P(), and type parsing happens as separate function,
+and path is specified as a []string. E.g., instead of
 
 ```
     .UDuration("dot.path")
@@ -35,7 +35,7 @@ instead of
 you now have to write:
 
 ```
-    .U().P("dot.path").Duration()
+    .U().P("dot", "path").Duration()
 ```
 
 The API model was simplified, calling accessors with empty path is no longer needed,

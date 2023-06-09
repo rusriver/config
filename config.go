@@ -1,5 +1,7 @@
 package config
 
+import "bytes"
+
 // Config ---------------------------------------------------------------------
 
 // Config represents a configuration with convenient access methods.
@@ -25,10 +27,10 @@ func (c *Config) LastError() error {
 	return c.lastError
 }
 
-func (c *Config) P(path string) *Config {
+func (c *Config) P(pathParts ...string) *Config {
 	c.resetErrOkState()
 	var err error
-	c.Root, err = get(c.Root, path)
+	c.Root, err = get(c.Root, pathParts)
 	if err != nil {
 		c.handleError(err)
 	}
@@ -98,4 +100,31 @@ func (c *Config) E(err *error) (c2 *Config) {
 	c2 = c.Copy()
 	c.err = err
 	return c2
+}
+
+func SplitKeyOnParts(key string) []string {
+	parts := []string{}
+
+	bracketOpened := false
+	var buffer bytes.Buffer
+	for _, char := range key {
+		if char == 91 || char == 93 { // [ ]
+			bracketOpened = char == 91
+			continue
+		}
+		if char == 46 && !bracketOpened { // point
+			parts = append(parts, buffer.String())
+			buffer.Reset()
+			continue
+		}
+
+		buffer.WriteRune(char)
+	}
+
+	if buffer.String() != "" {
+		parts = append(parts, buffer.String())
+		buffer.Reset()
+	}
+
+	return parts
 }

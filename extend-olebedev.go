@@ -11,7 +11,7 @@ func (c *Config) ExtendBy(c2 *Config) *Config {
 	keys := getAllKeys(c2.Root)
 	for _, key := range keys {
 		k := strings.Join(key, ".")
-		i, err := get(c2.Root, k)
+		i, err := get(c2.Root, SplitKeyOnParts(k))
 		if err != nil {
 			c.handleError(err)
 		}

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -36,20 +35,19 @@ func getAllKeys(source interface{}, base ...string) [][]string {
 }
 
 // get returns a child of the given value according to a dotted path.
-func get(c interface{}, path string) (interface{}, error) {
-	parts := splitKeyOnParts(path)
+func get(c interface{}, pathParts []string) (interface{}, error) {
 	// Normalize path.
-	for k, v := range parts {
+	for k, v := range pathParts {
 		if v == "" {
 			if k == 0 {
-				parts = parts[1:]
+				pathParts = pathParts[1:]
 			} else {
-				return nil, fmt.Errorf("Invalid path %q", path)
+				return nil, fmt.Errorf("Invalid path %q", strings.Join(pathParts, "."))
 			}
 		}
 	}
 	// Get the value.
-	for pos, part := range parts {
+	for pos, part := range pathParts {
 		switch cv := c.(type) {
 		case []interface{}:
 			if i, error := strconv.ParseInt(part, 10, 0); error == nil {
@@ -58,23 +56,23 @@ func get(c interface{}, path string) (interface{}, error) {
 				} else {
 					return nil, fmt.Errorf(
 						"Index out of range at %q: list has only %v items",
-						strings.Join(parts[:pos+1], "."), len(cv))
+						strings.Join(pathParts[:pos+1], "."), len(cv))
 				}
 			} else {
 				return nil, fmt.Errorf("Invalid list index at %q",
-					strings.Join(parts[:pos+1], "."))
+					strings.Join(pathParts[:pos+1], "."))
 			}
 		case map[string]interface{}:
 			if value, ok := cv[part]; ok {
 				c = value
 			} else {
 				return nil, fmt.Errorf("Nonexistent map key at %q",
-					strings.Join(parts[:pos+1], "."))
+					strings.Join(pathParts[:pos+1], "."))
 			}
 		default:
 			return nil, fmt.Errorf(
 				"Invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
-				strings.Join(parts[:pos+1], "."), c)
+				strings.Join(pathParts[:pos+1], "."), c)
 		}
 	}
 
@@ -157,33 +155,6 @@ func set(c interface{}, path string, value interface{}) error {
 	}
 
 	return nil
-}
-
-func splitKeyOnParts(key string) []string {
-	parts := []string{}
-
-	bracketOpened := false
-	var buffer bytes.Buffer
-	for _, char := range key {
-		if char == 91 || char == 93 { // [ ]
-			bracketOpened = char == 91
-			continue
-		}
-		if char == 46 && !bracketOpened { // point
-			parts = append(parts, buffer.String())
-			buffer.Reset()
-			continue
-		}
-
-		buffer.WriteRune(char)
-	}
-
-	if buffer.String() != "" {
-		parts = append(parts, buffer.String())
-		buffer.Reset()
-	}
-
-	return parts
 }
 
 // typeMismatchError returns an error for an expected type.
