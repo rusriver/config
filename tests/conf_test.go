@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/rusriver/config/v2"
@@ -15,8 +13,5 @@ func Test_ConfigInheritance_1_0(t *testing.T) {
 		E(&err).
 		LoadWithParenting()
 
-	fmt.Println(err)
-
-	bb, _ := json.MarshalIndent(conf, "", "    ")
-	fmt.Println(string(bb))
+	conf.PrintJson("1")
 }
