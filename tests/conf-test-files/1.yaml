@@ -1,0 +1,8 @@
+parent: 0.yaml
+a: 1
+b: 2
+y1-only: 1
+check:
+  x:
+    s: sdf-1
+

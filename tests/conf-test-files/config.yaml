@@ -1,0 +1,8 @@
+parents: [1.yaml, x1/X.yaml]
+c: 3
+config-only: 1
+check-2:
+  x:
+    a: asd-3
+    s: sdf-3
+

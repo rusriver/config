@@ -1,0 +1,8 @@
+a: 1
+b: 1
+y0-only: 1
+check:
+  x:
+    a: asd-0
+    s: sdf-0
+
