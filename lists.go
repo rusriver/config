@@ -19,7 +19,9 @@ func (c *Config) ListConfig() []*Config {
 
 	l2 := make([]*Config, 0, len(l))
 	for _, v := range l {
-		l2 = append(l2, &Config{Root: v})
+		c2 := c.Copy()
+		c2.Root = v
+		l2 = append(l2, c2)
 	}
 
 	return l2

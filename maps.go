@@ -19,7 +19,8 @@ func (c *Config) MapConfig() map[string]*Config {
 
 	m2 := make(map[string]*Config, len(m))
 	for k, v := range m {
-		m2[k] = &Config{Root: v}
+		m2[k] = c.Copy()
+		m2[k].Root = v
 	}
 
 	return m2
