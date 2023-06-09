@@ -6,7 +6,7 @@ import (
 )
 
 func (c *Config) Map() map[string]any {
-	n := c.lastFetchedNode
+	n := c.Root
 	if value, ok := n.(map[string]interface{}); ok {
 		return value
 	}

@@ -38,6 +38,9 @@ you now have to write:
     .U().P("dot.path").Duration()
 ```
 
+The API model was simplified, calling accessors with empty path is no longer needed,
+the GetNestedConfig() was removed.
+
 Different mapping rules for env variables - now all dashes are removed. For example,
 if you have a path "a.s-d.f", previously the env variable A_S-D_F would be looked for,
 now it will be A_SD_F. Obviously, both "sd" and "s-d" would map to the same thing,

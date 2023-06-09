@@ -6,7 +6,7 @@ import (
 )
 
 func (c *Config) List() []any {
-	n := c.lastFetchedNode
+	n := c.Root
 	if value, ok := n.([]interface{}); ok {
 		return value
 	}

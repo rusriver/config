@@ -6,7 +6,7 @@ import (
 )
 
 func (c *Config) Bool() bool {
-	n := c.lastFetchedNode
+	n := c.Root
 	switch n := n.(type) {
 	case bool:
 		return n
@@ -22,7 +22,7 @@ func (c *Config) Bool() bool {
 }
 
 func (c *Config) Float64() float64 {
-	n := c.lastFetchedNode
+	n := c.Root
 	switch n := n.(type) {
 	case float64:
 		return n
@@ -40,7 +40,7 @@ func (c *Config) Float64() float64 {
 }
 
 func (c *Config) Int() int {
-	n := c.lastFetchedNode
+	n := c.Root
 	switch n := n.(type) {
 	case float64:
 		// encoding/json unmarshals numbers into floats
@@ -63,7 +63,7 @@ func (c *Config) Int() int {
 }
 
 func (c *Config) String() string {
-	n := c.lastFetchedNode
+	n := c.Root
 	switch n := n.(type) {
 	case bool, float64, int:
 		return fmt.Sprint(n)
