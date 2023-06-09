@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// Get all keys for given interface
-func getKeys(source interface{}, base ...string) [][]string {
+// Get all keys for given interface, recursively
+func getAllKeys(source interface{}, base ...string) [][]string {
 	acc := [][]string{}
 
 	// Copy "base" so that underlying slice array is not
@@ -19,13 +19,13 @@ func getKeys(source interface{}, base ...string) [][]string {
 	switch c := source.(type) {
 	case map[string]interface{}:
 		for k, v := range c {
-			keys := getKeys(v, append(nextBase, k)...)
+			keys := getAllKeys(v, append(nextBase, k)...)
 			acc = append(acc, keys...)
 		}
 	case []interface{}:
 		for i, v := range c {
 			k := strconv.Itoa(i)
-			keys := getKeys(v, append(nextBase, k)...)
+			keys := getAllKeys(v, append(nextBase, k)...)
 			acc = append(acc, keys...)
 		}
 	default:
@@ -186,8 +186,8 @@ func splitKeyOnParts(key string) []string {
 	return parts
 }
 
-// typeMismatch returns an error for an expected type.
-func typeMismatch(expected string, got interface{}) error {
+// typeMismatchError returns an error for an expected type.
+func typeMismatchError(expected string, got interface{}) error {
 	return fmt.Errorf("Type mismatch: expected %s; got %T", expected, got)
 }
 

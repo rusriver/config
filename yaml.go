@@ -6,18 +6,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// ParseYamlBytes reads a YAML configuration from the given []byte.
-func ParseYamlBytes(c []byte) (*Config, error) {
-	return parseYaml(c)
-}
-
-// ParseYaml reads a YAML configuration from the given string.
-func ParseYaml(c string) (*Config, error) {
-	return parseYaml([]byte(c))
-}
-
-// ParseYamlFile reads a YAML configuration from the given filename.
-func ParseYamlFile(filename string) (*Config, error) {
+// parseYamlFile reads a YAML configuration from the given filename.
+func parseYamlFile(filename string) (*Config, error) {
 	c, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err

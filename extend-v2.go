@@ -7,9 +7,9 @@ import (
 // ExtendBy() extends current config with another config: i.e. all values
 // from another config are added to the current config, and overwritten
 // with new values if already present. It implements prototype-based inheritance.
-func (c *Config) ExtendBy_v2(c2 *Config) (err error) {
+func (c *Config) ExtendBy_v2(c2 *Config) *Config {
 	c.Root = extend_v2(c.Root, c2.Root)
-	return
+	return c
 }
 
 // Recursively extends c1 with c2

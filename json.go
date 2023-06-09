@@ -5,13 +5,8 @@ import (
 	"os"
 )
 
-// ParseJson reads a JSON configuration from the given string.
-func ParseJson(c string) (*Config, error) {
-	return parseJson([]byte(c))
-}
-
-// ParseJsonFile reads a JSON configuration from the given filename.
-func ParseJsonFile(filename string) (*Config, error) {
+// parseJsonFile reads a JSON configuration from the given filename.
+func parseJsonFile(filename string) (*Config, error) {
 	c, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err

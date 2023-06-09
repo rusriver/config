@@ -7,17 +7,15 @@ import "strings"
 // with new values if already present. It implements prototype-based inheritance.
 // Note that if you extend with different structure you will get an error.
 // See: `.Set()` method for details.
-func (c *Config) ExtendBy(c2 *Config) (err error) {
-	keys := getKeys(c2.Root)
+func (c *Config) ExtendBy(c2 *Config) *Config {
+	keys := getAllKeys(c2.Root)
 	for _, key := range keys {
 		k := strings.Join(key, ".")
 		i, err := get(c2.Root, k)
 		if err != nil {
-			return err
+			c.handleError(err)
 		}
-		if err := c.Set(k, i); err != nil {
-			return err
-		}
+		c.Set(k, i)
 	}
-	return nil
+	return c
 }
