@@ -6,9 +6,8 @@ import (
 	"strings"
 )
 
-// Get all keys for given interface, recursively
-func getAllKeys(source interface{}, base ...string) [][]string {
-	acc := [][]string{}
+func getAllPaths(source interface{}, base ...string) [][]string {
+	paths := [][]string{}
 
 	// Copy "base" so that underlying slice array is not
 	// modified in recursive calls
@@ -18,20 +17,20 @@ func getAllKeys(source interface{}, base ...string) [][]string {
 	switch c := source.(type) {
 	case map[string]interface{}:
 		for k, v := range c {
-			keys := getAllKeys(v, append(nextBase, k)...)
-			acc = append(acc, keys...)
+			keys := getAllPaths(v, append(nextBase, k)...)
+			paths = append(paths, keys...)
 		}
 	case []interface{}:
 		for i, v := range c {
 			k := strconv.Itoa(i)
-			keys := getAllKeys(v, append(nextBase, k)...)
-			acc = append(acc, keys...)
+			keys := getAllPaths(v, append(nextBase, k)...)
+			paths = append(paths, keys...)
 		}
 	default:
-		acc = append(acc, nextBase)
-		return acc
+		paths = append(paths, nextBase)
+		return paths
 	}
-	return acc
+	return paths
 }
 
 // get returns a child of the given value according to a dotted path.
@@ -81,21 +80,20 @@ func get(c interface{}, pathParts []string) (interface{}, error) {
 
 // set returns an error, in case when it is not possible to
 // establish the value obtained in accordance with given dotted path.
-func set(c interface{}, path string, value interface{}) error {
-	parts := strings.Split(path, ".")
+func set(c interface{}, pathParts []string, value interface{}) error {
 	// Normalize path.
-	for k, v := range parts {
+	for k, v := range pathParts {
 		if v == "" {
 			if k == 0 {
-				parts = parts[1:]
+				pathParts = pathParts[1:]
 			} else {
-				return fmt.Errorf("Invalid path %q", path)
+				return fmt.Errorf("Invalid path %q", pathParts)
 			}
 		}
 	}
 
 	point := &c
-	for pos, part := range parts {
+	for pos, part := range pathParts {
 		switch c := (*point).(type) {
 		case []interface{}:
 			if i, error := strconv.ParseInt(part, 10, 0); error == nil {
@@ -106,7 +104,7 @@ func set(c interface{}, path string, value interface{}) error {
 				}
 
 				// 2. set value or go further
-				if pos+1 == len(parts) {
+				if pos+1 == len(pathParts) {
 					c[i] = value
 				} else {
 					// if exists just pick the pointer
@@ -114,7 +112,7 @@ func set(c interface{}, path string, value interface{}) error {
 						point = &va
 					} else {
 						// is next part slice or map?
-						if i, err := strconv.ParseInt(parts[pos+1], 10, 0); err == nil {
+						if i, err := strconv.ParseInt(pathParts[pos+1], 10, 0); err == nil {
 							va = make([]interface{}, int(i)+1, int(i)+1)
 						} else {
 							va = make(map[string]interface{})
@@ -127,10 +125,10 @@ func set(c interface{}, path string, value interface{}) error {
 
 			} else {
 				return fmt.Errorf("Invalid list index at %q",
-					strings.Join(parts[:pos+1], "."))
+					strings.Join(pathParts[:pos+1], "."))
 			}
 		case map[string]interface{}:
-			if pos+1 == len(parts) {
+			if pos+1 == len(pathParts) {
 				c[part] = value
 			} else {
 				// if exists just pick the pointer
@@ -138,7 +136,7 @@ func set(c interface{}, path string, value interface{}) error {
 					point = &va
 				} else {
 					// is next part slice or map?
-					if i, err := strconv.ParseInt(parts[pos+1], 10, 0); err == nil {
+					if i, err := strconv.ParseInt(pathParts[pos+1], 10, 0); err == nil {
 						va = make([]interface{}, int(i)+1, int(i)+1)
 					} else {
 						va = make(map[string]interface{})
@@ -150,7 +148,7 @@ func set(c interface{}, path string, value interface{}) error {
 		default:
 			return fmt.Errorf(
 				"Invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
-				strings.Join(parts[:pos+1], "."), c)
+				strings.Join(pathParts[:pos+1], "."), c)
 		}
 	}
 

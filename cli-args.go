@@ -8,7 +8,7 @@ import (
 
 // Parse command line arguments, based on existing config keys.
 func (c *Config) Flag() *Config {
-	keys := getAllKeys(c.Root)
+	keys := getAllPaths(c.Root)
 	hash := map[string]*string{}
 	for _, key := range keys {
 		k := strings.Join(key, "-")
@@ -21,7 +21,8 @@ func (c *Config) Flag() *Config {
 
 	flag.Visit(func(f *flag.Flag) {
 		name := strings.Replace(f.Name, "-", ".", -1)
-		c.Set(name, f.Value.String())
+		pathParts := SplitPathToParts(name)
+		c.Set(pathParts, f.Value.String())
 	})
 
 	return c
@@ -33,7 +34,7 @@ func (c *Config) Args(args ...string) *Config {
 		return c
 	}
 
-	keys := getAllKeys(c.Root)
+	keys := getAllPaths(c.Root)
 	hash := map[string]*string{}
 	_flag := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	var _err bytes.Buffer
@@ -49,7 +50,8 @@ func (c *Config) Args(args ...string) *Config {
 
 	_flag.Visit(func(f *flag.Flag) {
 		name := strings.Replace(f.Name, "-", ".", -1)
-		c.Set(name, f.Value.String())
+		pathParts := SplitPathToParts(name)
+		c.Set(pathParts, f.Value.String())
 	})
 
 	return c

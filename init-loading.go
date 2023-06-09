@@ -147,8 +147,8 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 		return c1
 	}
 	result = readNext(ic.FileName)
-	result.Set("parent", nil)
-	result.Set("parents", nil)
+	result.Set([]string{"parent"}, nil)
+	result.Set([]string{"parents"}, nil)
 	ic.Logger.Info().Msg("reading the config file(s) OK")
 	return
 }

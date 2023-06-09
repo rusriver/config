@@ -66,9 +66,9 @@ func (c *Config) handleError(err error) {
 }
 
 // Sets a nested config according to a dotted path.
-func (c *Config) Set(path string, v interface{}) {
+func (c *Config) Set(pathParts []string, v interface{}) {
 	c.resetErrOkState()
-	err := set(c.Root, path, v)
+	err := set(c.Root, pathParts, v)
 	if err != nil {
 		c.handleError(err)
 	}
@@ -102,7 +102,7 @@ func (c *Config) E(err *error) (c2 *Config) {
 	return c2
 }
 
-func SplitKeyOnParts(key string) []string {
+func SplitPathToParts(key string) []string {
 	parts := []string{}
 
 	bracketOpened := false
