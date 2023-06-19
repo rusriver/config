@@ -6,7 +6,7 @@ import (
 )
 
 func (c *Config) Map() map[string]any {
-	n := c.Root
+	n := c.DataTreeRoot
 	if value, ok := n.(map[string]interface{}); ok {
 		return value
 	}
@@ -20,7 +20,7 @@ func (c *Config) MapConfig() map[string]*Config {
 	m2 := make(map[string]*Config, len(m))
 	for k, v := range m {
 		m2[k] = c.Copy()
-		m2[k].Root = v
+		m2[k].DataTreeRoot = v
 	}
 
 	return m2

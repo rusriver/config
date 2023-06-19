@@ -4,24 +4,24 @@ import (
 	"bytes"
 )
 
-// Config ---------------------------------------------------------------------
-
 // Config represents a configuration with convenient access methods.
 type Config struct {
-	Root          interface{}
+	DataTreeRoot  any
 	lastError     error
 	ok            *bool
 	err           *error
 	dontPanicFlag bool
+	Source        *Source
 }
 
 func (c *Config) Copy() *Config {
 	return &Config{
-		Root:          c.Root,
+		DataTreeRoot:  c.DataTreeRoot,
 		ok:            c.ok,
 		err:           c.err,
 		dontPanicFlag: c.dontPanicFlag,
 		lastError:     c.lastError,
+		Source:        c.Source,
 	}
 }
 
@@ -33,7 +33,7 @@ func (c *Config) P(pathParts ...string) *Config {
 	c.resetErrOkState()
 	c = c.Copy()
 	var err error
-	c.Root, err = get(c.Root, pathParts)
+	c.DataTreeRoot, err = get(c.DataTreeRoot, pathParts)
 	if err != nil {
 		c.handleError(err)
 	}
@@ -70,8 +70,19 @@ func (c *Config) handleError(err error) {
 
 // Sets a nested config according to a dotted path.
 func (c *Config) Set(pathParts []string, v interface{}) {
+	if c.Source == nil {
+		c.NonThreadSafe_Set(pathParts, v)
+		return
+	} else {
+		//TODO
+		c.NonThreadSafe_Set(pathParts, v) // FIX
+	}
+}
+
+// Sets a nested config according to a dotted path.
+func (c *Config) NonThreadSafe_Set(pathParts []string, v interface{}) {
 	c.resetErrOkState()
-	err := set(c.Root, pathParts, v)
+	err := set(c.DataTreeRoot, pathParts, v)
 	if err != nil {
 		c.handleError(err)
 	}

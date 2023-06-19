@@ -8,7 +8,7 @@ import (
 // from another config are added to the current config, and overwritten
 // with new values if already present. It implements prototype-based inheritance.
 func (c *Config) ExtendBy_v2(c2 *Config) *Config {
-	c.Root = extend_v2(c.Root, c2.Root)
+	c.DataTreeRoot = extend_v2(c.DataTreeRoot, c2.DataTreeRoot)
 	return c
 }
 

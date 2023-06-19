@@ -1,0 +1,17 @@
+
+
+In updater G, single one:
+
+    conf2 := conf.DeepCopy()
+    conf2.Set(path, value)
+    conf.SwapToNewVersion(conf2)
+
+In the G, who wants to write:
+
+    conf.SendSet(path, value) // works via chan
+
+In any concurrent user G:
+
+    Always periodically get the conf from centralized place, because the pointer may change.
+
+---

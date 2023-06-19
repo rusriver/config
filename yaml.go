@@ -25,7 +25,7 @@ func parseYaml(c []byte) (*Config, error) {
 	if out, err = normalizeValue(out); err != nil {
 		return nil, err
 	}
-	return &Config{Root: out}, nil
+	return &Config{DataTreeRoot: out}, nil
 }
 
 // RenderYaml renders a YAML configuration.

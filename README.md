@@ -57,4 +57,33 @@ New idiom to load config, with automatic file type or data format detection:
 
 Added LoadWithParenting().
 
+## Thread-safety
 
+There are three M.O. to use it:
+
+1) Load once, then use concurrently, but keep it immutable. Most often used case.
+
+2) Use Set() method, but then it's not thread-safe.
+
+3) Thread-safe mutability support, using RCU, and Source object idiom.
+
+Example of initializing the Source object:
+
+```
+        k.Source = config.NewSource(func (opts *config.NewSource_Options) {
+            opts.Config = conf
+            opts.Context = ctx
+            // + other opts, optionally
+        })
+```
+
+Example of using the config from the Source:
+
+```
+        conf := k.Source.Config
+        // use conf as usual, but update it once in a while
+```
+
+In variant 2, the Set() method is just a by-pass to the NonThreadSafe_Set().
+
+In 2 and 3, the usage of Set() by user is identical.
