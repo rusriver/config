@@ -33,8 +33,8 @@ func getAllPaths(source interface{}, base ...string) [][]string {
 	return paths
 }
 
-// get returns a child of the given value according to a dotted path.
-func get(c interface{}, pathParts []string) (interface{}, error) {
+// goByPath returns a child of the given value according to a dotted path.
+func goByPath(c interface{}, pathParts []string) (interface{}, error) {
 	// Normalize path.
 	for k, v := range pathParts {
 		if v == "" {
@@ -78,10 +78,9 @@ func get(c interface{}, pathParts []string) (interface{}, error) {
 	return c, nil
 }
 
-// set returns an error, in case when it is not possible to
-// establish the value obtained in accordance with given dotted path.
+// Makes a path if necessary, (re-)sets a value
 func set(c interface{}, pathParts []string, value interface{}) error {
-	// Normalize path.
+	// Normalize the path.
 	for k, v := range pathParts {
 		if v == "" {
 			if k == 0 {
@@ -92,66 +91,121 @@ func set(c interface{}, pathParts []string, value interface{}) error {
 		}
 	}
 
-	point := &c
-	for pos, part := range pathParts {
-		switch c := (*point).(type) {
+	now := c
+	for pathPart_i, pathPart_str := range pathParts {
+		switch now_typed := now.(type) {
+
 		case []interface{}:
-			if i, error := strconv.ParseInt(part, 10, 0); error == nil {
-				// 1. normalize slice capacity
-				if int(i) >= len(c) {
-					c = append(c, make([]interface{}, int(i)-len(c)+1)...)
-					*point = c
-				}
+			// we're in an array, check if the pp is a number, else err
+			if i64, error := strconv.ParseInt(pathPart_str, 10, 0); error == nil {
+				// it's a number, okay; we've also parsed it
+				i := int(i64)
 
-				// 2. set value or go further
-				if pos+1 == len(pathParts) {
-					c[i] = value
+				// don't enlarge the array here, as it won't be saved in its parent then
+
+				if pathPart_i+1 == len(pathParts) {
+					// this is the last pp, which is indeed a number, we're in an array;
+					// just set the value
+					now_typed[i] = value
 				} else {
-					// if exists just pick the pointer
-					if va := c[i]; va != nil {
-						point = &va
-					} else {
-						// is next part slice or map?
-						if i, err := strconv.ParseInt(pathParts[pos+1], 10, 0); err == nil {
-							va = make([]interface{}, int(i)+1, int(i)+1)
-						} else {
-							va = make(map[string]interface{})
-						}
-						c[i] = va
-						point = &va
-					}
+					// this is NOT the last pp, there's more path
 
+					if val := now_typed[i]; val != nil {
+						// next thing exists just pick the pointer, and move in it
+
+						// but first, make sure that IF the next pp is array, it is large enough,
+						// and update the it HERE. Yeah, the it.
+						switch val_typed := val.(type) {
+						case []interface{}:
+							next_pp := pathParts[pathPart_i+1]
+							if i64, error := strconv.ParseInt(next_pp, 10, 0); error == nil {
+								// it's a number, okay; we've also parsed it
+								if int(i64) >= len(val_typed) {
+									// enlarge array length if needed
+									val_typed = append(val_typed, make([]interface{}, int(i64)-len(val_typed)+1)...)
+								}
+								// save it here
+								now_typed[i] = val_typed
+								val = val_typed
+							}
+						}
+
+						// now move it it
+						now = val
+					} else {
+						// we're in an array, and it doesn't have an element at index; we're about to create it;
+						// is next path part a string (map key) or number (array index)?
+						if i, err := strconv.ParseInt(pathParts[pathPart_i+1], 10, 0); err == nil {
+							// next pp was a number, so create a nested array
+							val = make([]interface{}, int(i)+1, int(i)+1)
+						} else {
+							// next pp was a string, to create a nested map
+							val = make(map[string]interface{})
+						}
+						now_typed[i] = val
+						now = val
+					}
 				}
 
 			} else {
 				return fmt.Errorf("Invalid list index at %q",
-					strings.Join(pathParts[:pos+1], "."))
+					strings.Join(pathParts[:pathPart_i+1], "."))
 			}
+
 		case map[string]interface{}:
-			if pos+1 == len(pathParts) {
-				c[part] = value
+			if pathPart_i+1 == len(pathParts) {
+				// this is the last part of path, and we're in a map, therefore set value as map key value
+				now_typed[pathPart_str] = value
 			} else {
-				// if exists just pick the pointer
-				if va, ok := c[part]; ok && va != nil {
-					point = &va
-				} else {
-					// is next part slice or map?
-					if i, err := strconv.ParseInt(pathParts[pos+1], 10, 0); err == nil {
-						va = make([]interface{}, int(i)+1, int(i)+1)
-					} else {
-						va = make(map[string]interface{})
+				// this is not the last pp
+				if val, ok := now_typed[pathPart_str]; ok && val != nil {
+					// we're in a map, it has our path part, so move in it, by pointer
+
+					// but first, make sure that IF the next pp is array, it is large enough,
+					// and update the it HERE. Yeah, the it.
+					switch val_typed := val.(type) {
+					case []interface{}:
+						next_pp := pathParts[pathPart_i+1]
+						if i64, error := strconv.ParseInt(next_pp, 10, 0); error == nil {
+							// it's a number, okay; we've also parsed it
+							if int(i64) >= len(val_typed) {
+								// enlarge array length if needed
+								val_typed = append(val_typed, make([]interface{}, int(i64)-len(val_typed)+1)...)
+							}
+							// save it here
+							now_typed[pathPart_str] = val_typed
+							val = val_typed
+						}
 					}
-					c[part] = va
-					point = &va
+
+					// now move it it
+					now = val
+				} else {
+					// we're in a map, and it doesn't have such key; we're about to create it;
+					// is next path part a string (map key) or number (array index)?
+					next_pp := pathParts[pathPart_i+1]
+					if i, err := strconv.ParseInt(next_pp, 10, 0); err == nil {
+						// next pp was a number, so create a nested array
+						val = make([]interface{}, int(i)+1, int(i)+1)
+					} else {
+						// next pp was a string, to create a nested map
+						val = make(map[string]interface{})
+					}
+
+					// set value as a map key value
+					now_typed[pathPart_str] = val
+
+					// move in further
+					now = val
 				}
 			}
+
 		default:
 			return fmt.Errorf(
 				"Invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
-				strings.Join(pathParts[:pos+1], "."), c)
+				strings.Join(pathParts[:pathPart_i+1], "."), now_typed)
 		}
 	}
-
 	return nil
 }
 

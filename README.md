@@ -5,15 +5,19 @@ stored as JSON or YAML.
 
 This is a fork of [olebedev/config](https://github.com/olebedev/config),
 which in turn is a fork of [original version](https://github.com/moraes/config).
-
 It has incompatibilities with the original(s), and quite an extended functionality.
+In fact, it has diverged a lot, and continues to.
 
-TODO:
+Can be used not just as a config, but as a general data model storage, with
+thread-safe high-performance mutability. It has limitations, but if you know
+what this is about, you'll see them yourself. After all, it's open source.
 
-- test ExtendBy_v2() (not tested yet, at all)
+TODO NEXT:
+
 - Serk support
 - provide extensive examples of use, suitable for copy-paste
-- write tests, and make them work
+- repair old original tests
+- refactor it to the MAV model
 
 ## The v2 improvements:
 
@@ -65,7 +69,7 @@ There are three M.O. to use it:
 
 2) Use Set() method, but then it's not thread-safe.
 
-3) Thread-safe mutability support, using RCU, and Source object idiom.
+3) Thread-safe mutability support, using high-performance RCU, and Source object idiom.
 
 Example of initializing the Source object:
 
@@ -87,3 +91,30 @@ Example of using the config from the Source:
 In variant 2, the Set() method is just a by-pass to the NonThreadSafe_Set().
 
 In 2 and 3, the usage of Set() by user is identical.
+
+## Explicit synchronization of a completion of a batch of concurrent Set()
+
+The Set() command is totally async (or how you'd expect to wait for each command completion?)
+Instead, see next paragraph.
+        
+What is you do want to flush you commands immediatelly, and make sure they were indeed
+executed, so you can safely get an updated Config from Source?
+
+For this, the ChFlushSignal has ChDown, by which you can get notified if flush indeed
+completed.
+
+Because there can be several concurrent flush customers, we need to make ChFlushSignal
+buffered, e.g. 10% of ChCmd.
+
+So, if a user wants to make sure its commands took effect, it does this:
+
+```
+    chDown := make(chan struct{})
+    source.ChFlushSignal <- &MsgFlushSignal{ChDown: chDown}
+    <-chDown
+    // here we're certain the commands were flushed
+```
+
+Be careful: if you send explicit flush signal, with ChDown != nil, and never read from it,
+you'll hang the whole write-back updater goroutine.
+

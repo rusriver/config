@@ -10,7 +10,7 @@ func (c *Config) ExtendByEnvs_WithPrefix(prefix string) *Config {
 	if prefix != "" {
 		prefix = strings.ToUpper(prefix) + "_"
 	}
-	paths := getAllPaths(c.DataTreeRoot)
+	paths := getAllPaths(c.DataSubTree)
 	for _, pathParts := range paths {
 		k := strings.ReplaceAll(strings.ToUpper(strings.Join(pathParts, "_")), "-", "")
 		if val, exist := syscall.Getenv(prefix + k); exist {

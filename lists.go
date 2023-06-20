@@ -6,7 +6,7 @@ import (
 )
 
 func (c *Config) List() []any {
-	n := c.DataTreeRoot
+	n := c.DataSubTree
 	if value, ok := n.([]interface{}); ok {
 		return value
 	}
@@ -19,8 +19,8 @@ func (c *Config) ListConfig() []*Config {
 
 	l2 := make([]*Config, 0, len(l))
 	for _, v := range l {
-		c2 := c.Copy()
-		c2.DataTreeRoot = v
+		c2 := c.ChildCopy()
+		c2.DataSubTree = v
 		l2 = append(l2, c2)
 	}
 

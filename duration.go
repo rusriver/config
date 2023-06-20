@@ -3,7 +3,7 @@ package config
 import "time"
 
 func (c *Config) Duration() time.Duration {
-	n := c.DataTreeRoot
+	n := c.DataSubTree
 	if str, ok := n.(string); ok {
 		dur, err := time.ParseDuration(str)
 		if err == nil {

@@ -6,9 +6,9 @@ package config
 // Note that if you extend with different structure you will get an error.
 // See: `.Set()` method for details.
 func (c *Config) ExtendBy(c2 *Config) *Config {
-	paths := getAllPaths(c2.DataTreeRoot)
+	paths := getAllPaths(c2.DataSubTree)
 	for _, pathParts := range paths {
-		i, err := get(c2.DataTreeRoot, pathParts)
+		i, err := goByPath(c2.DataSubTree, pathParts)
 		if err != nil {
 			c.handleError(err)
 		}
