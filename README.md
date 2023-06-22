@@ -109,10 +109,12 @@ buffered, e.g. 10% of ChCmd.
 So, if a user wants to make sure its commands took effect, it does this:
 
 ```
-    chDown := make(chan struct{})
-    source.ChFlushSignal <- &MsgFlushSignal{ChDown: chDown}
-    <-chDown
-    // here we're certain the commands were flushed
+	// sync the config
+	chDown := make(chan struct{})
+	configSource.ChFlushSignal <- &config.MsgFlushSignal{ChDown: chDown}
+	<-chDown
+	
+	// here we're certain the commands were flushed
 ```
 
 Be careful: if you send explicit flush signal, with ChDown != nil, and never read from it,

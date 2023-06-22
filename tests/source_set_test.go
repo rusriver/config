@@ -130,3 +130,32 @@ func Test_20230620_6_2(t *testing.T) {
 	fmt.Printf("+++1 %+v\n", m)
 	fmt.Printf("+++2 %+v\n", m2)
 }
+
+func Test_20230622_1(t *testing.T) {
+	var err error
+	conf := (&config.InitContext{}).
+		FromFile("conf-test-files/c2.yaml").
+		E(&err).
+		Load()
+	configSource := config.NewSource(func(opts *config.NewSource_Options) {
+		opts.Config = conf
+		opts.CommandBufferSize = 10
+		opts.UpdatePeriod = time.Second * 1
+	})
+
+	var ok bool
+	asd := conf.P("a", "s", "d")
+	f := asd.Ok(&ok).P("f")
+	g := f.P("g")
+	g.Set([]string{"congrads"}, "HELLO THERE")
+
+	p := g.GetCurrentLocationPlusPath()
+	fmt.Println("+++PATH: ", p)
+
+	// sync the config
+	chDown := make(chan struct{})
+	configSource.ChFlushSignal <- &config.MsgFlushSignal{ChDown: chDown}
+	<-chDown
+
+	configSource.Config.PrintJson("INIT")
+}

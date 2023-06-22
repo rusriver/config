@@ -18,14 +18,13 @@ type Config struct {
 
 func (c *Config) ChildCopy() *Config {
 	return &Config{
-		DataSubTree:            c.DataSubTree,
-		lastError:              c.lastError,
-		ok:                     c.ok,
-		err:                    c.err,
-		dontPanicFlag:          c.dontPanicFlag,
-		Source:                 c.Source,
-		relativePathFromParent: c.relativePathFromParent,
-		parent:                 c,
+		DataSubTree:   c.DataSubTree,
+		lastError:     c.lastError,
+		ok:            c.ok,
+		err:           c.err,
+		dontPanicFlag: c.dontPanicFlag,
+		Source:        c.Source,
+		parent:        c,
 	}
 }
 
