@@ -13,8 +13,8 @@ type InitContext struct {
 	FileName string
 	Data     []byte
 	Logger   *zerolog.Logger
-	err      *error
-	ok       *bool
+	ErrPtr   *error
+	OkPtr    *bool
 }
 
 func (ic *InitContext) FromFile(fileName string) *InitContext {
@@ -33,12 +33,12 @@ func (ic *InitContext) WithLogger(logger *zerolog.Logger) *InitContext {
 }
 
 func (ic *InitContext) E(err *error) *InitContext {
-	ic.err = err
+	ic.ErrPtr = err
 	return ic
 }
 
 func (ic *InitContext) Ok(ok *bool) *InitContext {
-	ic.ok = ok
+	ic.OkPtr = ok
 	return ic
 }
 
@@ -81,22 +81,22 @@ func (ic *InitContext) Load() *Config {
 		}
 	}()
 
-	// this doe inherit these..
-	c.err = ic.err
-	c.ok = ic.ok
+	// this does inherit these..
+	c.ErrPtr = ic.ErrPtr
+	c.OkPtr = ic.OkPtr
 
 	if err == nil {
-		if ic.ok != nil {
-			*ic.ok = true
+		if ic.OkPtr != nil {
+			*ic.OkPtr = true
 		}
 	} else {
-		if ic.err != nil {
-			*ic.err = err
+		if ic.ErrPtr != nil {
+			*ic.ErrPtr = err
 		}
-		if ic.ok != nil {
-			*ic.ok = false
+		if ic.OkPtr != nil {
+			*ic.OkPtr = false
 		}
-		if ic.err == nil && ic.ok == nil {
+		if ic.ErrPtr == nil && ic.OkPtr == nil {
 			panic(err)
 		}
 	}
@@ -123,7 +123,7 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 		}
 		if isRoot {
 			isRoot = false
-			id := c1.E(&err).P("id").String()
+			id := c1.Err(&err).P("id").String()
 			ic.Logger.Info().Msgf("KPPEY7ZW: config file '%v' id='%v' err='%v'", configFileName, id, err)
 		}
 		parents := []string{}

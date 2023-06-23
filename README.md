@@ -23,11 +23,13 @@ TODO NEXT:
 
 U*() functions are removed. Instead, get-type functions behave this way:
 
-- If E() is set, it sets error if any;
+- If Err() is set, it sets error if any;
 - If Ok() is set, it sets true on success, false on error;
-- If U() is set, it doesn't panic on error, if no E() or Ok() were set;
+- If U() is set, it doesn't panic on error, if no Err() or Ok() were set;
 - If neither set, it panics on error (to be intercepted as exception);
 - In either case, the default value is returned;
+- ErrOk() resets error to nil and ok to true, if either is set;
+- ErrPtr and OkPtr are accessible directly as well;
 
 Path now is specified always in P(), and type parsing happens as separate function,
 and path is specified as a []string. E.g., instead of
@@ -54,9 +56,10 @@ New idiom to load config, with automatic file type or data format detection:
 
 ```
     var err error
-    conf := config.InitContext{}.FromFile("filename.yaml").E(&err).Load()  // detected by suffix
+    conf := config.InitContext{}.FromFile("filename.yaml").Err(&err).Load()  // detected by suffix
 
-    conf2 := config.InitContext{}.FromBytes([]byte(`text here`)).E(&err).Load() // tries all known formats
+    err = nil
+    conf2 := config.InitContext{}.FromBytes([]byte(`text here`)).Err(&err).Load() // tries all known formats
 ```
 
 Added LoadWithParenting().
@@ -120,3 +123,64 @@ So, if a user wants to make sure its commands took effect, it does this:
 Be careful: if you send explicit flush signal, with ChDown != nil, and never read from it,
 you'll hang the whole write-back updater goroutine.
 
+## Clarification on use of err, ok, and ErrOk()
+
+Repeated use of err, and or misuse of ok, and forgetting to use ErrOk(). No method in this
+library does explicitly sets ok=true, or err=nil, a user must do this itself. For example:
+
+```
+    // This code is totally wrong
+
+    var err error
+    var ok bool  // not set to true
+
+    ... = conf.Ok(&ok).Err(&err).P("a", "s").MapConfig()    // expr-1
+    if err != nil {}    // correct
+    if !ok {}           // wrong, because ok is anyway false
+
+    someFunc(conf)
+
+    ... = conf.Ok(&ok).Err(&err).P("a", "s").MapConfig()  // expr-2
+    ... = conf.P("a", "s").MapConfig()    // expr-3, identical to expr-2, because err and ok are left set in conf
+    if err != nil {}    // wrong, will react to the error from expr-1 or expr-4
+    if !ok {}           // wrong, because ok is anyway false, also will react to !ok from expr-1 or expr-4
+
+func someFunc(conf *config.Config) {
+    ... = conf.Duration() // expr-4
+}
+```
+
+So how to use it right? Several rules:
+
+1) Always write `ok := true`, instead of `var ok bool`;
+2) Before new expression, if you re-use the err, write `err = nil`;
+3) Can call `.ErrOk().` in the beginning of expression, to reset err=nil and ok=true explicitly;
+4) In long expression, only __first__ failing method sets err and ok. This is because the only first one is relevant, all subsequent ones would fail anyway with not useful error values, therefore we are interested in only the first error in an expression.
+
+Here's the same code, re-written correctly:
+
+```
+    var err error
+    ok := true
+
+    ... = conf.Ok(&ok).Err(&err).P("a", "s").MapConfig()    // expr-1
+    if err != nil {}    // correct
+    if !ok {}           // correct
+
+    someFunc(conf)
+
+    err = nil
+    ok = true
+    ... = conf.Ok(&ok).Err(&err).P("a", "s").MapConfig()  // expr-2
+    if err != nil {}    // correct
+    if !ok {}           // correct
+
+    ... = conf.ErrOk().         // using ErrOk() is less LOC
+        P("a", "s").MapConfig() // expr-3, identical to expr-2, because err and ok are left set in conf
+    if err != nil {}    // correct
+    if !ok {}           // correct
+
+func someFunc(conf *config.Config) {
+    ... = conf.Duration() // expr-4
+}
+```

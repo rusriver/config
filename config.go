@@ -7,9 +7,8 @@ import (
 // Config represents a configuration with convenient access methods.
 type Config struct {
 	DataSubTree            any
-	lastError              error
-	ok                     *bool
-	err                    *error
+	OkPtr                  *bool
+	ErrPtr                 *error
 	dontPanicFlag          bool
 	Source                 *Source `json:"-"`
 	relativePathFromParent []string
@@ -19,9 +18,8 @@ type Config struct {
 func (c *Config) ChildCopy() *Config {
 	return &Config{
 		DataSubTree:   c.DataSubTree,
-		lastError:     c.lastError,
-		ok:            c.ok,
-		err:           c.err,
+		OkPtr:         c.OkPtr,
+		ErrPtr:        c.ErrPtr,
 		dontPanicFlag: c.dontPanicFlag,
 		Source:        c.Source,
 		parent:        c,
@@ -42,14 +40,9 @@ func (c *Config) GetCurrentLocationPlusPath(pathParts ...string) (path []string)
 	return
 }
 
-func (c *Config) LastError() error {
-	return c.lastError
-}
-
 // P() does not create a path, if it didn't exist. So, if used with Set(),
 // it will take you as far as there is something, not farther.
 func (c *Config) P(pathParts ...string) *Config {
-	c.resetErrOkState()
 	c2 := c.ChildCopy()
 	var err error
 	c2.DataSubTree, err = goByPath(c2.DataSubTree, pathParts)
@@ -60,29 +53,27 @@ func (c *Config) P(pathParts ...string) *Config {
 	return c2
 }
 
-func (c *Config) resetErrOkState() {
-	c.lastError = nil
-	if c.ok != nil {
-		*c.ok = true
+func (c *Config) ErrOk() *Config {
+	if c.OkPtr != nil {
+		*c.OkPtr = true
 	}
-	if c.err != nil {
-		*c.err = nil
+	if c.ErrPtr != nil {
+		*c.ErrPtr = nil
 	}
-
+	return c
 }
 
 func (c *Config) handleError(err error) {
 	if err == nil {
 		return
 	} else {
-		c.lastError = err
-		if c.err != nil {
-			*c.err = err
+		if c.ErrPtr != nil {
+			*c.ErrPtr = err
 		}
-		if c.ok != nil {
-			*c.ok = false
+		if c.OkPtr != nil {
+			*c.OkPtr = false
 		}
-		if c.err == nil && c.ok == nil && !c.dontPanicFlag {
+		if c.ErrPtr == nil && c.OkPtr == nil && !c.dontPanicFlag {
 			panic(err)
 		}
 	}
@@ -130,7 +121,6 @@ func (c *Config) Set(pathParts []string, v interface{}) {
 // If you don't want to specify path, and just want to use it from current location,
 // then invoke with nil path.
 func (c *Config) NonThreadSafe_Set(pathParts []string, v interface{}) {
-	c.resetErrOkState()
 	err := set(c.DataSubTree, pathParts, v)
 	if err != nil {
 		c.handleError(err)
@@ -138,30 +128,26 @@ func (c *Config) NonThreadSafe_Set(pathParts []string, v interface{}) {
 }
 
 func (c *Config) U() (c2 *Config) {
-	c.resetErrOkState()
 	c2 = c.ChildCopy()
 	c2.dontPanicFlag = true
 	return c2
 }
 
 func (c *Config) NotU() (c2 *Config) {
-	c.resetErrOkState()
 	c2 = c.ChildCopy()
 	c2.dontPanicFlag = false
 	return c2
 }
 
 func (c *Config) Ok(okRef *bool) (c2 *Config) {
-	c.resetErrOkState()
 	c2 = c.ChildCopy()
-	c2.ok = okRef
+	c2.OkPtr = okRef
 	return c2
 }
 
-func (c *Config) E(err *error) (c2 *Config) {
-	c.resetErrOkState()
+func (c *Config) Err(err *error) (c2 *Config) {
 	c2 = c.ChildCopy()
-	c2.err = err
+	c2.ErrPtr = err
 	return c2
 }
 

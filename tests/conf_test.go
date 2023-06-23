@@ -87,17 +87,17 @@ func Test_20230620_4(t *testing.T) {
 
 	asd := conf.P("a", "s", "d")
 
-	asd.E(&err).Set([]string{"ARRAY", "3"}, 3)
+	asd.Err(&err).Set([]string{"ARRAY", "3"}, 3)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	asd.E(&err).Set([]string{"ARRAY", "6"}, 6)
+	asd.Err(&err).Set([]string{"ARRAY", "6"}, 6)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
 
 	for x := 5; x < 30; x++ {
-		asd.E(&err).Set([]string{"ARRAY", strconv.Itoa(x + 3)}, x-5)
+		asd.Err(&err).Set([]string{"ARRAY", strconv.Itoa(x + 3)}, x-5)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}

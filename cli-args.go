@@ -46,7 +46,10 @@ func (c *Config) Args(args ...string) *Config {
 		_flag.StringVar(hash[k], k, val, "")
 	}
 
-	c.lastError = _flag.Parse(args[1:])
+	err := _flag.Parse(args[1:])
+	if c.ErrPtr != nil {
+		*c.ErrPtr = err
+	}
 
 	_flag.Visit(func(f *flag.Flag) {
 		name := strings.Replace(f.Name, "-", ".", -1)
