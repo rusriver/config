@@ -116,24 +116,24 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 		ic.Logger.Info().Msgf("EZWLkX: reading the config file '%v'...", configFileName)
 		filesAlreadyRead[configFileName] = true
 		var err error
-		c1 := (&InitContext{FileName: configFileName}).Err(&err).Load()
+		c := (&InitContext{FileName: configFileName}).Err(&err).Load()
 		if err != nil {
 			ic.Logger.Err(err).Msgf("fYmNdkUt: config.ParseYamlFile('%v') failed", configFileName)
 			panic(err)
 		}
 		if isRoot {
 			isRoot = false
-			id := c1.ErrOk().P("id").String()
+			id := c.ErrOk().P("id").String()
 			ic.Logger.Info().Msgf("KPPEY7ZW: config file '%v' id='%v' err='%v'", configFileName, id, err)
 		}
 		parents := []string{}
-		p := c1.P("parent").String()
-		if len(p) > 0 {
-			parents = append(parents, p)
+		ok := true
+		p1 := c.Ok(&ok).P("parent").String()
+		if ok {
+			parents = append(parents, p1)
 		}
-		if list := c1.P("parents").ListString(); err == nil {
-			parents = append(parents, list...)
-		}
+		list := c.P("parents").ListString()
+		parents = append(parents, list...)
 		for _, configFileName := range parents {
 			path := baseDir + "/" + configFileName
 			if filesAlreadyRead[path] {
@@ -141,10 +141,10 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 				panic(err)
 			}
 			cN := readNext(path)
-			cN.ExtendBy_v2(c1)
-			c1 = cN
+			cN.ExtendBy_v2(c)
+			c = cN
 		}
-		return c1
+		return c
 	}
 	result = readNext(ic.FileName)
 	result.Set([]string{"parent"}, nil)
