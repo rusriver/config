@@ -143,7 +143,7 @@ func Test_20230622_1(t *testing.T) {
 		opts.UpdatePeriod = time.Second * 1
 	})
 
-	var ok bool
+	ok := true
 	asd := conf.P("a", "s", "d")
 	f := asd.Ok(&ok).P("f")
 	g := f.P("g")
