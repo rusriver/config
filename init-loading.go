@@ -81,15 +81,7 @@ func (ic *InitContext) Load() *Config {
 		}
 	}()
 
-	// this does inherit these..
-	c.ErrPtr = ic.ErrPtr
-	c.OkPtr = ic.OkPtr
-
-	if err == nil {
-		if ic.OkPtr != nil {
-			*ic.OkPtr = true
-		}
-	} else {
+	if err != nil {
 		if ic.ErrPtr != nil {
 			*ic.ErrPtr = err
 		}
@@ -99,7 +91,13 @@ func (ic *InitContext) Load() *Config {
 		if ic.ErrPtr == nil && ic.OkPtr == nil {
 			panic(err)
 		}
+		return nil
 	}
+
+	// this does inherit these..
+	c.ErrPtr = ic.ErrPtr
+	c.OkPtr = ic.OkPtr
+
 	return c
 }
 
