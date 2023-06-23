@@ -13,7 +13,7 @@ func Test_ConfigInheritance_1_0(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
 		FromFile("conf-test-files/config.yaml").
-		E(&err).
+		Err(&err).
 		LoadWithParenting()
 
 	conf.PrintJson("1")
@@ -23,7 +23,7 @@ func Test_20230620_1(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
 		FromFile("conf-test-files/c2.yaml").
-		E(&err).
+		Err(&err).
 		Load()
 
 	conf.PrintJson("1")
@@ -46,7 +46,7 @@ func Test_20230620_2(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
 		FromFile("conf-test-files/c2.yaml").
-		E(&err).
+		Err(&err).
 		Load()
 
 	conf.PrintJson("initial")
@@ -61,7 +61,7 @@ func Test_20230620_3(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
 		FromFile("conf-test-files/c2.yaml").
-		E(&err).
+		Err(&err).
 		Load()
 
 	conf.PrintJson("initial")
@@ -80,7 +80,7 @@ func Test_20230620_4(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
 		FromFile("conf-test-files/c2.yaml").
-		E(&err).
+		Err(&err).
 		Load()
 
 	conf.PrintJson("initial")

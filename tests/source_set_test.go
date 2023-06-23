@@ -13,7 +13,7 @@ func Test_20230620_5(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
 		FromFile("conf-test-files/c2.yaml").
-		E(&err).
+		Err(&err).
 		Load()
 
 	asd := conf.P("a", "s", "d")
@@ -58,7 +58,7 @@ func Test_20230620_5_2(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
 		FromFile("conf-test-files/c2.yaml").
-		E(&err).
+		Err(&err).
 		Load()
 
 	asd := conf.P("a", "s", "d")
@@ -135,7 +135,7 @@ func Test_20230622_1(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
 		FromFile("conf-test-files/c2.yaml").
-		E(&err).
+		Err(&err).
 		Load()
 	configSource := config.NewSource(func(opts *config.NewSource_Options) {
 		opts.Config = conf

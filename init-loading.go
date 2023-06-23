@@ -32,7 +32,7 @@ func (ic *InitContext) WithLogger(logger *zerolog.Logger) *InitContext {
 	return ic
 }
 
-func (ic *InitContext) E(err *error) *InitContext {
+func (ic *InitContext) Err(err *error) *InitContext {
 	ic.ErrPtr = err
 	return ic
 }
@@ -116,14 +116,14 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 		ic.Logger.Info().Msgf("EZWLkX: reading the config file '%v'...", configFileName)
 		filesAlreadyRead[configFileName] = true
 		var err error
-		c1 := (&InitContext{FileName: configFileName}).E(&err).Load()
+		c1 := (&InitContext{FileName: configFileName}).Err(&err).Load()
 		if err != nil {
 			ic.Logger.Err(err).Msgf("fYmNdkUt: config.ParseYamlFile('%v') failed", configFileName)
 			panic(err)
 		}
 		if isRoot {
 			isRoot = false
-			id := c1.Err(&err).P("id").String()
+			id := c1.ErrOk().P("id").String()
 			ic.Logger.Info().Msgf("KPPEY7ZW: config file '%v' id='%v' err='%v'", configFileName, id, err)
 		}
 		parents := []string{}
