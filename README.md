@@ -145,6 +145,8 @@ library does explicitly sets ok=true, or err=nil, a user must do this itself. Fo
     if err != nil {}    // wrong, will react to the error from expr-1 or expr-4
     if !ok {}           // wrong, because ok is anyway false, also will react to !ok from expr-1 or expr-4
 
+    ... = conf.ErrOk().Ok(&ok).Err(&err).P("a", "s").MapConfig()  // expr-5, WRONG
+
 func someFunc(conf *config.Config) {
     ... = conf.Duration() // expr-4
 }
@@ -155,7 +157,8 @@ So how to use it right? Several rules:
 1) Always write `ok := true`, instead of `var ok bool`;
 2) Before new expression, if you re-use the err, write `err = nil`;
 3) Can call `.ErrOk().` in the beginning of expression, to reset err=nil and ok=true explicitly;
-4) In long expression, only __first__ failing method sets err and ok. This is because the only first one is relevant, all subsequent ones would fail anyway with not useful error values, therefore we are interested in only the first error in an expression.
+4) In an epression where Err() or Ok() are set, the ErrOk() must be __after__ them;
+5) In long expression, only __first__ failing method sets err and ok. This is because the only first one is relevant, all subsequent ones would fail anyway with not useful error values, therefore we are interested in only the first error in an expression.
 
 Here's the same code, re-written correctly:
 
@@ -179,6 +182,8 @@ Here's the same code, re-written correctly:
         P("a", "s").MapConfig() // expr-3, identical to expr-2, because err and ok are left set in conf
     if err != nil {}    // correct
     if !ok {}           // correct
+
+    ... = conf.Ok(&ok).Err(&err).ErrOk().P("a", "s").MapConfig()  // expr-5, correct
 
 func someFunc(conf *config.Config) {
     ... = conf.Duration() // expr-4
