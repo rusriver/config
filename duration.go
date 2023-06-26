@@ -2,7 +2,7 @@ package config
 
 import "time"
 
-func (c *Config) Duration() time.Duration {
+func (c *Config) Duration(defaultValueFunc ...func() time.Duration) time.Duration {
 	n := c.DataSubTree
 	if str, ok := n.(string); ok {
 		dur, err := time.ParseDuration(str)
@@ -11,12 +11,19 @@ func (c *Config) Duration() time.Duration {
 		}
 	}
 	c.handleError(typeMismatchError("string", n))
+	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+		if c.ExpressionFailure == 2 {
+			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+		}
+		c.ExpressionFailure++
+		return defaultValueFunc[0]()
+	}
 	return 0
 }
 
-func (c *Config) ListDuration() []time.Duration {
-	l := c.List()
+func (c *Config) ListDuration(defaultValueFunc ...func() []time.Duration) []time.Duration {
 	undef := make([]time.Duration, 0)
+	l := c.List()
 
 	l2 := make([]time.Duration, 0, len(l))
 	for _, n := range l {
@@ -29,6 +36,13 @@ func (c *Config) ListDuration() []time.Duration {
 			}
 		}
 		c.handleError(typeMismatchError("string", n))
+		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+			if c.ExpressionFailure == 2 {
+				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+			}
+			c.ExpressionFailure++
+			return defaultValueFunc[0]()
+		}
 		return undef
 	OK:
 		l2 = append(l2, v)
@@ -36,9 +50,9 @@ func (c *Config) ListDuration() []time.Duration {
 	return l2
 }
 
-func (c *Config) MapDuration() map[string]time.Duration {
-	m := c.Map()
+func (c *Config) MapDuration(defaultValueFunc ...func() map[string]time.Duration) map[string]time.Duration {
 	undef := make(map[string]time.Duration)
+	m := c.Map()
 
 	m2 := make(map[string]time.Duration, len(m))
 	for k, n := range m {
@@ -51,6 +65,13 @@ func (c *Config) MapDuration() map[string]time.Duration {
 			}
 		}
 		c.handleError(typeMismatchError("string", n))
+		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+			if c.ExpressionFailure == 2 {
+				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+			}
+			c.ExpressionFailure++
+			return defaultValueFunc[0]()
+		}
 		return undef
 	OK:
 		m2[k] = v

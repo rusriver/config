@@ -5,12 +5,19 @@ import (
 	"strconv"
 )
 
-func (c *Config) List() []any {
+func (c *Config) List(defaultValueFunc ...func() []any) []any {
 	n := c.DataSubTree
 	if value, ok := n.([]interface{}); ok {
 		return value
 	}
 	c.handleError(typeMismatchError("[]interface{}", n))
+	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+		if c.ExpressionFailure == 2 {
+			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+		}
+		c.ExpressionFailure++
+		return defaultValueFunc[0]()
+	}
 	return make([]any, 0)
 }
 
@@ -27,7 +34,7 @@ func (c *Config) ListConfig() []*Config {
 	return l2
 }
 
-func (c *Config) ListFloat64() []float64 {
+func (c *Config) ListFloat64(defaultValueFunc ...func() []float64) []float64 {
 	l := c.List()
 	undef := make([]float64, 0)
 
@@ -44,11 +51,25 @@ func (c *Config) ListFloat64() []float64 {
 			i, err := strconv.ParseFloat(n, 64)
 			if err != nil {
 				c.handleError(err)
+				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+					if c.ExpressionFailure == 2 {
+						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+					}
+					c.ExpressionFailure++
+					return defaultValueFunc[0]()
+				}
 				return undef
 			}
 			v = i
 		default:
 			c.handleError(typeMismatchError("float64, int or string", n))
+			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+				if c.ExpressionFailure == 2 {
+					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+				}
+				c.ExpressionFailure++
+				return defaultValueFunc[0]()
+			}
 			return undef
 		}
 		l2 = append(l2, v)
@@ -56,7 +77,7 @@ func (c *Config) ListFloat64() []float64 {
 	return l2
 }
 
-func (c *Config) ListInt() []int {
+func (c *Config) ListInt(defaultValueFunc ...func() []int) []int {
 	l := c.List()
 	undef := make([]int, 0)
 
@@ -78,11 +99,25 @@ func (c *Config) ListInt() []int {
 			i, err := strconv.ParseInt(n, 10, 0)
 			if err != nil {
 				c.handleError(err)
+				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+					if c.ExpressionFailure == 2 {
+						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+					}
+					c.ExpressionFailure++
+					return defaultValueFunc[0]()
+				}
 				return undef
 			}
 			v = int(i)
 		default:
 			c.handleError(typeMismatchError("float64, int or string", n))
+			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+				if c.ExpressionFailure == 2 {
+					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+				}
+				c.ExpressionFailure++
+				return defaultValueFunc[0]()
+			}
 			return undef
 		}
 		l2 = append(l2, v)
@@ -90,7 +125,15 @@ func (c *Config) ListInt() []int {
 	return l2
 }
 
-func (c *Config) ListString() []string {
+func (c *Config) ListString(defaultValueFunc ...func() []string) []string {
+	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+		if c.ExpressionFailure == 2 {
+			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+		}
+		c.ExpressionFailure++
+		return defaultValueFunc[0]()
+	}
+
 	l := c.List()
 
 	l2 := make([]string, 0, len(l))

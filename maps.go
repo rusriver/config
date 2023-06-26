@@ -5,12 +5,19 @@ import (
 	"strconv"
 )
 
-func (c *Config) Map() map[string]any {
+func (c *Config) Map(defaultValueFunc ...func() map[string]any) map[string]any {
 	n := c.DataSubTree
 	if value, ok := n.(map[string]interface{}); ok {
 		return value
 	}
 	c.handleError(typeMismatchError("map[string]interface{}", n))
+	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+		if c.ExpressionFailure == 2 {
+			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+		}
+		c.ExpressionFailure++
+		return defaultValueFunc[0]()
+	}
 	return make(map[string]any)
 }
 
@@ -26,7 +33,7 @@ func (c *Config) MapConfig() map[string]*Config {
 	return m2
 }
 
-func (c *Config) MapFloat64() map[string]float64 {
+func (c *Config) MapFloat64(defaultValueFunc ...func() map[string]float64) map[string]float64 {
 	m := c.Map()
 	undef := make(map[string]float64)
 
@@ -43,11 +50,25 @@ func (c *Config) MapFloat64() map[string]float64 {
 			i, err := strconv.ParseFloat(n, 64)
 			if err != nil {
 				c.handleError(err)
+				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+					if c.ExpressionFailure == 2 {
+						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+					}
+					c.ExpressionFailure++
+					return defaultValueFunc[0]()
+				}
 				return undef
 			}
 			v = i
 		default:
 			c.handleError(typeMismatchError("float64, int or string", n))
+			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+				if c.ExpressionFailure == 2 {
+					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+				}
+				c.ExpressionFailure++
+				return defaultValueFunc[0]()
+			}
 			return undef
 		}
 		m2[k] = v
@@ -55,7 +76,7 @@ func (c *Config) MapFloat64() map[string]float64 {
 	return m2
 }
 
-func (c *Config) MapInt() map[string]int {
+func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]int {
 	m := c.Map()
 	undef := make(map[string]int)
 
@@ -69,6 +90,13 @@ func (c *Config) MapInt() map[string]int {
 				v = i
 			} else {
 				c.handleError(fmt.Errorf("Value can't be converted to int: %v", n))
+				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+					if c.ExpressionFailure == 2 {
+						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+					}
+					c.ExpressionFailure++
+					return defaultValueFunc[0]()
+				}
 				return undef
 			}
 		case int:
@@ -77,11 +105,25 @@ func (c *Config) MapInt() map[string]int {
 			i, err := strconv.ParseInt(n, 10, 0)
 			if err != nil {
 				c.handleError(err)
+				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+					if c.ExpressionFailure == 2 {
+						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+					}
+					c.ExpressionFailure++
+					return defaultValueFunc[0]()
+				}
 				return undef
 			}
 			v = int(i)
 		default:
 			c.handleError(typeMismatchError("float64, int or string", n))
+			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+				if c.ExpressionFailure == 2 {
+					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+				}
+				c.ExpressionFailure++
+				return defaultValueFunc[0]()
+			}
 			return undef
 		}
 		m2[k] = v
@@ -89,7 +131,15 @@ func (c *Config) MapInt() map[string]int {
 	return m2
 }
 
-func (c *Config) MapString() map[string]string {
+func (c *Config) MapString(defaultValueFunc ...func() map[string]string) map[string]string {
+	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+		if c.ExpressionFailure == 2 {
+			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+		}
+		c.ExpressionFailure++
+		return defaultValueFunc[0]()
+	}
+
 	m := c.Map()
 
 	m2 := make(map[string]string, len(m))

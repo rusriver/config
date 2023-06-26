@@ -9,6 +9,7 @@ type Config struct {
 	DataSubTree            any
 	OkPtr                  *bool
 	ErrPtr                 *error
+	ExpressionFailure      int
 	dontPanicFlag          bool
 	Source                 *Source `json:"-"`
 	relativePathFromParent []string
@@ -65,6 +66,7 @@ func (c *Config) ErrOk() *Config {
 	if c.ErrPtr != nil {
 		*c.ErrPtr = nil
 	}
+	c.ExpressionFailure = 0
 	return c
 }
 
@@ -72,8 +74,16 @@ func (c *Config) handleError(err error) {
 	if err == nil {
 		return
 	} else {
+		if c.ExpressionFailure < 2 {
+			c.ExpressionFailure = 1
+		}
 		if c.ErrPtr != nil {
-			*c.ErrPtr = err
+			if *c.ErrPtr == nil {
+				// only set error, if there wasn't error already set;
+				// this way, we keep the very first occurred error in there,
+				// which is what we want (we don't want meaningless error-because-of-error errors)
+				*c.ErrPtr = err
+			}
 		}
 		if c.OkPtr != nil {
 			*c.OkPtr = false
@@ -82,6 +92,16 @@ func (c *Config) handleError(err error) {
 			panic(err)
 		}
 	}
+}
+
+func (c *Config) isExpressionOk() (ok bool) {
+	if c.ErrPtr != nil {
+		return *c.ErrPtr == nil
+	}
+	if c.OkPtr != nil {
+		return *c.OkPtr == true
+	}
+	return c.ExpressionFailure == 0
 }
 
 // Sets a nested config according to a path, relative from current location.

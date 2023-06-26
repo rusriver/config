@@ -189,3 +189,41 @@ func someFunc(conf *config.Config) {
     ... = conf.Duration() // expr-4
 }
 ```
+
+## Default value callbacks
+
+An optional callback function can be supplied to each value func, which will
+be called in case the expression failed, and yield the default value. If this happens,
+the function is called, and whatever it returns would be the result. The idea is that it's
+not just a constant default value, but that instead there can be some logic, which makes a
+dependency on other values (e.g. "default is false if ca-cert is set, true if ca-cert
+isn't set"), those values being captured in a closure.
+
+Example:
+
+```
+        caUseSystem = php.ErrOk().P("ca-use-system").Bool(func() {
+            return !(len(caCert) > 0)   // caCert is captured in a closure
+        })
+```
+
+Of course, you can achieve the same effect just setting Ok(), and then checking
+it in an "if". Or you can check Err(). Yes you can. But this approach is somehow more
+clean sometimes.
+
+Clarification on how it detects that an expression failed:
+
+1) If Err() or Ok() were set, we look at them;
+2) Otherwise, we look at the .ExpressionFailure, if it is set:
+   * =0    okay, nothing failed
+   * =1    failed
+   * =2    failed, one callback was already executed, new callbacks will cause panic
+3) The .ExpressionFailure is being reset by ErrOk(), or explicitly;
+
+This means, that if you don't have Err() or Ok() set, please use ErrOk()
+in the beginning of your expressions.
+
+To protect against missing ErrOk(), the logic guards against repeated calls
+of default functions in subsequent expressions, without prior ErrOk(), when
+there's no Err() or Ok() set.
+
