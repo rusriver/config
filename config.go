@@ -19,12 +19,13 @@ type Config struct {
 func (c *Config) ChildCopy() (c2 *Config) {
 	if c != nil {
 		c2 = &Config{
-			DataSubTree:   c.DataSubTree,
-			OkPtr:         c.OkPtr,
-			ErrPtr:        c.ErrPtr,
-			dontPanicFlag: c.dontPanicFlag,
-			Source:        c.Source,
-			parent:        c,
+			DataSubTree:       c.DataSubTree,
+			OkPtr:             c.OkPtr,
+			ErrPtr:            c.ErrPtr,
+			ExpressionFailure: c.ExpressionFailure,
+			dontPanicFlag:     c.dontPanicFlag,
+			Source:            c.Source,
+			parent:            c,
 		}
 	} else {
 		c2 = &Config{}
