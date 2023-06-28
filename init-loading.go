@@ -106,11 +106,10 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 		ic.Logger = &log.Logger
 	}
 	ic.Logger.Info().Msgf("ziPdTJw: reading the config file(s)...")
-	baseDir := filepath.Dir(ic.FileName)
 	filesAlreadyRead := map[string]bool{}
 	isRoot := true
-	var readNext func(configFileName string) *Config
-	readNext = func(configFileName string) *Config {
+	var readNext func(baseDir, configFileName string) *Config
+	readNext = func(baseDir, configFileName string) *Config {
 		ic.Logger.Info().Msgf("EZWLkX: reading the config file '%v'...", configFileName)
 		filesAlreadyRead[configFileName] = true
 		var err error
@@ -138,13 +137,13 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 				ic.Logger.Err(err).Msgf("AweL9D: config file loop: the file '%v' already read", path)
 				panic(err)
 			}
-			cN := readNext(path)
+			cN := readNext(filepath.Dir(path), path)
 			cN.ExtendBy_v2(c)
 			c = cN
 		}
 		return c
 	}
-	result = readNext(ic.FileName)
+	result = readNext(filepath.Dir(ic.FileName), ic.FileName)
 	result.Set([]string{"parent"}, nil)
 	result.Set([]string{"parents"}, nil)
 	ic.Logger.Info().Msg("K2aUDgz: reading the config file(s) OK")
