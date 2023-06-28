@@ -10,3 +10,7 @@ ea9487e4-d8c0-44f2:
       - Origin: https://qqq.www.eee
       - Origin: https://aaa.sss.ddd
 
+override-priority-test:
+    mongodb:
+        addr: "DEFAULT FROM 0.yaml"
+

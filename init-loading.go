@@ -108,42 +108,57 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 	ic.Logger.Info().Msgf("ziPdTJw: reading the config file(s)...")
 	filesAlreadyRead := map[string]bool{}
 	isRoot := true
-	var readNext func(baseDir, configFileName string) *Config
-	readNext = func(baseDir, configFileName string) *Config {
-		ic.Logger.Info().Msgf("EZWLkX: reading the config file '%v'...", configFileName)
-		filesAlreadyRead[configFileName] = true
+	depth := 0
+	var readParent func(baseDir, configFileName string) *Config
+	readParent = func(baseDir, currConfigFileName string) *Config {
+		depth--
+		defer func() { depth++ }()
+		logger := ic.Logger.With().Int("depth", depth).Logger()
+		logger.Info().Msgf("EZWLkX: reading the config file '%v'...", currConfigFileName)
+		filesAlreadyRead[currConfigFileName] = true
 		var err error
-		c := (&InitContext{FileName: configFileName}).Err(&err).Load()
+		conf := (&InitContext{FileName: currConfigFileName}).Err(&err).Load()
 		if err != nil {
-			ic.Logger.Err(err).Msgf("fYmNdkUt: config.ParseYamlFile('%v') failed", configFileName)
+			logger.Err(err).Msgf("fYmNdkUt: config.ParseYamlFile('%v') failed", currConfigFileName)
 			panic(err)
 		}
 		if isRoot {
 			isRoot = false
-			id := c.ErrOk().P("id").String()
-			ic.Logger.Info().Msgf("KPPEY7ZW: config file '%v' id='%v' err='%v'", configFileName, id, err)
+			id := conf.ErrOk().P("id").String()
+			logger.Info().Msgf("KPPEY7ZW: config file '%v' id='%v' err='%v'", currConfigFileName, id, err)
 		}
 		parents := []string{}
 		ok := true
-		p1 := c.Ok(&ok).P("parent").String()
+		p1 := conf.Ok(&ok).P("parent").String()
 		if ok {
 			parents = append(parents, p1)
 		}
-		list := c.P("parents").ListString()
+		list := conf.P("parents").ListString()
 		parents = append(parents, list...)
-		for _, configFileName := range parents {
-			path := baseDir + "/" + configFileName
-			if filesAlreadyRead[path] {
-				ic.Logger.Err(err).Msgf("AweL9D: config file loop: the file '%v' already read", path)
+		var aggregatedParentConf *Config
+		for _, parentConfigFileName := range parents {
+			parentFullPath := baseDir + "/" + parentConfigFileName
+			if filesAlreadyRead[parentFullPath] {
+				logger.Err(err).Msgf("AweL9D: config file loop: the file '%v' already read", parentFullPath)
 				panic(err)
 			}
-			cN := readNext(filepath.Dir(path), path)
-			cN.ExtendBy_v2(c)
-			c = cN
+			confParent := readParent(filepath.Dir(parentFullPath), parentFullPath)
+			if aggregatedParentConf == nil {
+				logger.Info().Msgf("KUY76-1: set aggregated parent from '%v'", parentFullPath)
+				aggregatedParentConf = confParent
+			} else {
+				logger.Info().Msgf("KUY76-2: extend aggregated parent with '%v'", parentFullPath)
+				aggregatedParentConf.ExtendBy_v2(confParent)
+			}
 		}
-		return c
+		if aggregatedParentConf != nil {
+			logger.Info().Msgf("KUY76-3: extend aggregated parent with '%v' and return it", currConfigFileName)
+			aggregatedParentConf.ExtendBy_v2(conf)
+			conf = aggregatedParentConf
+		}
+		return conf
 	}
-	result = readNext(filepath.Dir(ic.FileName), ic.FileName)
+	result = readParent(filepath.Dir(ic.FileName), ic.FileName)
 	result.Set([]string{"parent"}, nil)
 	result.Set([]string{"parents"}, nil)
 	ic.Logger.Info().Msg("K2aUDgz: reading the config file(s) OK")

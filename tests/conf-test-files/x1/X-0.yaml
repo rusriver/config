@@ -1,0 +1,4 @@
+override-priority-test:
+    mongodb:
+        addr: "OVERRIDE, SET FROM x1/X-0.yaml"
+

@@ -1,3 +1,5 @@
+parent: X-0.yaml
+
 X:
   x1: 1
   x2: 2
