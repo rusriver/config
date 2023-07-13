@@ -71,18 +71,27 @@ func (s *Source) theWriteBackUpdaterG() {
 		// This is RCU. Or RMW.
 
 		c2 := s.Config.ChildCopy()
-		c2.DataSubTree = deepcopy.Copy(c2.DataSubTree)
+		c2.parent = nil
 
+		xCloned := false
 		qLen := len(s.ChCmd)
 		for i := 0; i < qLen; i++ {
 			msg := <-s.ChCmd
 			switch msg.Command {
 			case Command_Set:
+				if !xCloned {
+					c2.DataSubTree = deepcopy.Copy(c2.DataSubTree)
+					xCloned = true
+				}
 				c2.NonThreadSafe_Set(msg.FullPath, msg.V)
 			}
 		}
 
-		s.Config = c2
+		if xCloned {
+			s.Config = c2
+		}
+
+		// PrintMemUsage()
 	}
 
 	for {
