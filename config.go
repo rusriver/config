@@ -9,12 +9,20 @@ type Config struct {
 	DataSubTree            any
 	OkPtr                  *bool
 	ErrPtr                 *error
-	ExpressionFailure      int
+	ExpressionFailure      ExpressionFailure
 	dontPanicFlag          bool
 	Source                 *Source `json:"-"`
 	relativePathFromParent []string
 	parent                 *Config
 }
+
+type ExpressionFailure int
+
+const (
+	ExpressionFailure_0_Norm = iota
+	ExpressionFailure_1_Failed
+	ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce
+)
 
 func (c *Config) ChildCopy() (c2 *Config) {
 	if c != nil {
@@ -67,7 +75,7 @@ func (c *Config) ErrOk() *Config {
 	if c.ErrPtr != nil {
 		*c.ErrPtr = nil
 	}
-	c.ExpressionFailure = 0
+	c.ExpressionFailure = ExpressionFailure_0_Norm
 	return c
 }
 
@@ -75,8 +83,8 @@ func (c *Config) handleError(err error) {
 	if err == nil {
 		return
 	} else {
-		if c.ExpressionFailure < 2 {
-			c.ExpressionFailure = 1
+		if c.ExpressionFailure < ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+			c.ExpressionFailure = ExpressionFailure_1_Failed
 		}
 		if c.ErrPtr != nil {
 			if *c.ErrPtr == nil {
@@ -102,7 +110,7 @@ func (c *Config) isExpressionOk() (ok bool) {
 	if c.OkPtr != nil {
 		return *c.OkPtr == true
 	}
-	return c.ExpressionFailure == 0
+	return c.ExpressionFailure == ExpressionFailure_0_Norm
 }
 
 // Sets a nested config according to a path, relative from current location.

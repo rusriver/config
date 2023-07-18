@@ -12,13 +12,14 @@ func (c *Config) Duration(defaultValueFunc ...func() time.Duration) time.Duratio
 	}
 	c.handleError(typeMismatchError("string", n))
 	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == 2 {
+		if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 		}
 		c.ExpressionFailure++
 		return defaultValueFunc[0]()
+	} else {
+		return 0
 	}
-	return 0
 }
 
 func (c *Config) ListDuration(defaultValueFunc ...func() []time.Duration) []time.Duration {
@@ -37,13 +38,14 @@ func (c *Config) ListDuration(defaultValueFunc ...func() []time.Duration) []time
 		}
 		c.handleError(typeMismatchError("string", n))
 		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-			if c.ExpressionFailure == 2 {
+			if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 			}
 			c.ExpressionFailure++
 			return defaultValueFunc[0]()
+		} else {
+			return undef
 		}
-		return undef
 	OK:
 		l2 = append(l2, v)
 	}
@@ -66,13 +68,14 @@ func (c *Config) MapDuration(defaultValueFunc ...func() map[string]time.Duration
 		}
 		c.handleError(typeMismatchError("string", n))
 		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-			if c.ExpressionFailure == 2 {
+			if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 			}
 			c.ExpressionFailure++
 			return defaultValueFunc[0]()
+		} else {
+			return undef
 		}
-		return undef
 	OK:
 		m2[k] = v
 	}

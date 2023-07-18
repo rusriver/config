@@ -12,13 +12,14 @@ func (c *Config) Map(defaultValueFunc ...func() map[string]any) map[string]any {
 	}
 	c.handleError(typeMismatchError("map[string]interface{}", n))
 	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == 2 {
+		if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 		}
 		c.ExpressionFailure++
 		return defaultValueFunc[0]()
+	} else {
+		return make(map[string]any)
 	}
-	return make(map[string]any)
 }
 
 func (c *Config) MapConfig() map[string]*Config {
@@ -51,25 +52,27 @@ func (c *Config) MapFloat64(defaultValueFunc ...func() map[string]float64) map[s
 			if err != nil {
 				c.handleError(err)
 				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-					if c.ExpressionFailure == 2 {
+					if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 					}
 					c.ExpressionFailure++
 					return defaultValueFunc[0]()
+				} else {
+					return undef
 				}
-				return undef
 			}
 			v = i
 		default:
 			c.handleError(typeMismatchError("float64, int or string", n))
 			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-				if c.ExpressionFailure == 2 {
+				if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 				}
 				c.ExpressionFailure++
 				return defaultValueFunc[0]()
+			} else {
+				return undef
 			}
-			return undef
 		}
 		m2[k] = v
 	}
@@ -91,13 +94,14 @@ func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]in
 			} else {
 				c.handleError(fmt.Errorf("Value can't be converted to int: %v", n))
 				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-					if c.ExpressionFailure == 2 {
+					if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 					}
 					c.ExpressionFailure++
 					return defaultValueFunc[0]()
+				} else {
+					return undef
 				}
-				return undef
 			}
 		case int:
 			v = n
@@ -106,25 +110,27 @@ func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]in
 			if err != nil {
 				c.handleError(err)
 				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-					if c.ExpressionFailure == 2 {
+					if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 					}
 					c.ExpressionFailure++
 					return defaultValueFunc[0]()
+				} else {
+					return undef
 				}
-				return undef
 			}
 			v = int(i)
 		default:
 			c.handleError(typeMismatchError("float64, int or string", n))
 			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-				if c.ExpressionFailure == 2 {
+				if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 				}
 				c.ExpressionFailure++
 				return defaultValueFunc[0]()
+			} else {
+				return undef
 			}
-			return undef
 		}
 		m2[k] = v
 	}
@@ -133,7 +139,7 @@ func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]in
 
 func (c *Config) MapString(defaultValueFunc ...func() map[string]string) map[string]string {
 	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == 2 {
+		if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 		}
 		c.ExpressionFailure++

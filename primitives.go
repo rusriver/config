@@ -15,24 +15,28 @@ func (c *Config) Bool(defaultValueFunc ...func() bool) bool {
 		if err != nil {
 			c.handleError(err)
 			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-				if c.ExpressionFailure == 2 {
+				if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 				}
 				c.ExpressionFailure++
 				return defaultValueFunc[0]()
+			} else {
+				return false
 			}
 		}
 		return b
-	}
-	c.handleError(typeMismatchError("bool or string", n))
-	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == 2 {
-			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+	default:
+		c.handleError(typeMismatchError("bool or string", n))
+		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+			if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+			}
+			c.ExpressionFailure++
+			return defaultValueFunc[0]()
+		} else {
+			return false
 		}
-		c.ExpressionFailure++
-		return defaultValueFunc[0]()
 	}
-	return false
 }
 
 func (c *Config) Float64(defaultValueFunc ...func() float64) float64 {
@@ -47,24 +51,28 @@ func (c *Config) Float64(defaultValueFunc ...func() float64) float64 {
 		if err != nil {
 			c.handleError(err)
 			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-				if c.ExpressionFailure == 2 {
+				if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 				}
 				c.ExpressionFailure++
 				return defaultValueFunc[0]()
+			} else {
+				return 0
 			}
 		}
 		return b
-	}
-	c.handleError(typeMismatchError("float64, int or string", n))
-	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == 2 {
-			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+	default:
+		c.handleError(typeMismatchError("float64, int or string", n))
+		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+			if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+			}
+			c.ExpressionFailure++
+			return defaultValueFunc[0]()
+		} else {
+			return 0
 		}
-		c.ExpressionFailure++
-		return defaultValueFunc[0]()
 	}
-	return 0
 }
 
 func (c *Config) Int(defaultValueFunc ...func() int) int {
@@ -78,13 +86,14 @@ func (c *Config) Int(defaultValueFunc ...func() int) int {
 		}
 		c.handleError(fmt.Errorf("Value can't be converted to int: %v", n))
 		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-			if c.ExpressionFailure == 2 {
+			if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 			}
 			c.ExpressionFailure++
 			return defaultValueFunc[0]()
+		} else {
+			return int(n)
 		}
-		return int(n)
 	case int:
 		return n
 	case string:
@@ -93,16 +102,26 @@ func (c *Config) Int(defaultValueFunc ...func() int) int {
 		}
 		c.handleError(err)
 		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-			if c.ExpressionFailure == 2 {
+			if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
 				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 			}
 			c.ExpressionFailure++
 			return defaultValueFunc[0]()
+		} else {
+			return 0
 		}
-		return 0
+	default:
+		c.handleError(typeMismatchError("float64, int or string", n))
+		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+			if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+			}
+			c.ExpressionFailure++
+			return defaultValueFunc[0]()
+		} else {
+			return 0
+		}
 	}
-	c.handleError(typeMismatchError("float64, int or string", n))
-	return 0
 }
 
 func (c *Config) String(defaultValueFunc ...func() string) string {
@@ -112,14 +131,16 @@ func (c *Config) String(defaultValueFunc ...func() string) string {
 		return fmt.Sprint(n)
 	case string:
 		return n
-	}
-	c.handleError(typeMismatchError("bool, float64, int or string", n))
-	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == 2 {
-			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+	default:
+		c.handleError(typeMismatchError("bool, float64, int or string", n))
+		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+			if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+			}
+			c.ExpressionFailure++
+			return defaultValueFunc[0]()
+		} else {
+			return fmt.Sprintf("%v", n)
 		}
-		c.ExpressionFailure++
-		return defaultValueFunc[0]()
 	}
-	return ""
 }
