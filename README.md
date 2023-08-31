@@ -56,10 +56,10 @@ New idiom to load config, with automatic file type or data format detection:
 
 ```
     var err error
-    conf := config.InitContext{}.FromFile("filename.yaml").Err(&err).Load()  // detected by suffix
+    conf := (&config.InitContext{}).FromFile("filename.yaml").Err(&err).Load()  // detected by suffix
 
     err = nil
-    conf2 := config.InitContext{}.FromBytes([]byte(`text here`)).Err(&err).Load() // tries all known formats
+    conf2 := (&config.InitContext{}).FromBytes([]byte(`text here`)).Err(&err).Load() // tries all known formats
 ```
 
 Added LoadWithParenting().
