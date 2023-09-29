@@ -140,7 +140,12 @@ func (c *Config) String(defaultValueFunc ...func() string) string {
 			c.ExpressionFailure++
 			return defaultValueFunc[0]()
 		} else {
-			return fmt.Sprintf("%v", n)
+			switch n := n.(type) {
+			case nil:
+				return ""
+			default:
+				return fmt.Sprintf("%v", n)
+			}
 		}
 	}
 }
