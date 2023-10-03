@@ -162,3 +162,39 @@ func (c *Config) MapString(defaultValueFunc ...func() map[string]string) map[str
 
 	return m2
 }
+
+func (c *Config) MapBool(defaultValueFunc ...func() map[string]bool) map[string]bool {
+	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+		if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+		}
+		c.ExpressionFailure++
+		return defaultValueFunc[0]()
+	}
+
+	m := c.Map()
+	undef := make(map[string]bool)
+
+	m2 := make(map[string]bool, len(m))
+	for k, n := range m {
+		var v bool
+		switch n := n.(type) {
+		case bool:
+			v = n
+		default:
+			c.handleError(typeMismatchError("bool", n))
+			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
+				if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
+				}
+				c.ExpressionFailure++
+				return defaultValueFunc[0]()
+			} else {
+				return undef
+			}
+		}
+		m2[k] = v
+	}
+
+	return m2
+}
