@@ -12,10 +12,10 @@ func (c *Config) Map(defaultValueFunc ...func() map[string]any) map[string]any {
 	}
 	c.handleError(typeMismatchError("map[string]interface{}", n))
 	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+		if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 		}
-		c.ExpressionFailure++
+		c.ExpressionStatus++
 		return defaultValueFunc[0]()
 	} else {
 		return make(map[string]any)
@@ -52,10 +52,10 @@ func (c *Config) MapFloat64(defaultValueFunc ...func() map[string]float64) map[s
 			if err != nil {
 				c.handleError(err)
 				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-					if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+					if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 					}
-					c.ExpressionFailure++
+					c.ExpressionStatus++
 					return defaultValueFunc[0]()
 				} else {
 					return undef
@@ -65,10 +65,10 @@ func (c *Config) MapFloat64(defaultValueFunc ...func() map[string]float64) map[s
 		default:
 			c.handleError(typeMismatchError("float64, int or string", n))
 			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-				if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+				if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 				}
-				c.ExpressionFailure++
+				c.ExpressionStatus++
 				return defaultValueFunc[0]()
 			} else {
 				return undef
@@ -94,10 +94,10 @@ func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]in
 			} else {
 				c.handleError(fmt.Errorf("Value can't be converted to int: %v", n))
 				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-					if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+					if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 					}
-					c.ExpressionFailure++
+					c.ExpressionStatus++
 					return defaultValueFunc[0]()
 				} else {
 					return undef
@@ -110,10 +110,10 @@ func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]in
 			if err != nil {
 				c.handleError(err)
 				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-					if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+					if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 					}
-					c.ExpressionFailure++
+					c.ExpressionStatus++
 					return defaultValueFunc[0]()
 				} else {
 					return undef
@@ -123,10 +123,10 @@ func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]in
 		default:
 			c.handleError(typeMismatchError("float64, int or string", n))
 			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-				if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+				if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 				}
-				c.ExpressionFailure++
+				c.ExpressionStatus++
 				return defaultValueFunc[0]()
 			} else {
 				return undef
@@ -139,10 +139,10 @@ func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]in
 
 func (c *Config) MapString(defaultValueFunc ...func() map[string]string) map[string]string {
 	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+		if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 		}
-		c.ExpressionFailure++
+		c.ExpressionStatus++
 		return defaultValueFunc[0]()
 	}
 
@@ -165,10 +165,10 @@ func (c *Config) MapString(defaultValueFunc ...func() map[string]string) map[str
 
 func (c *Config) MapBool(defaultValueFunc ...func() map[string]bool) map[string]bool {
 	if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-		if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+		if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 			panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 		}
-		c.ExpressionFailure++
+		c.ExpressionStatus++
 		return defaultValueFunc[0]()
 	}
 
@@ -184,10 +184,10 @@ func (c *Config) MapBool(defaultValueFunc ...func() map[string]bool) map[string]
 		default:
 			c.handleError(typeMismatchError("bool", n))
 			if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
-				if c.ExpressionFailure == ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
+				if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 					panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
 				}
-				c.ExpressionFailure++
+				c.ExpressionStatus++
 				return defaultValueFunc[0]()
 			} else {
 				return undef

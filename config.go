@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"strings"
 )
 
 // Config represents a configuration with convenient access methods.
@@ -9,7 +10,7 @@ type Config struct {
 	DataSubTree            any
 	OkPtr                  *bool
 	ErrPtr                 *error
-	ExpressionFailure      ExpressionFailure
+	ExpressionStatus       ExpressionFailure
 	dontPanicFlag          bool
 	Source                 *Source `json:"-"`
 	relativePathFromParent []string
@@ -19,21 +20,23 @@ type Config struct {
 type ExpressionFailure int
 
 const (
-	ExpressionFailure_0_Norm = iota
-	ExpressionFailure_1_Failed
-	ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce
+	ExpressionStatus_0_Norm = iota
+	ExpressionStatus_1_Failed
+	ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce
 )
 
+// Makes a copy of Config struct. The actual data is linked by reference.
 func (c *Config) ChildCopy() (c2 *Config) {
 	if c != nil {
 		c2 = &Config{
-			DataSubTree:       c.DataSubTree,
-			OkPtr:             c.OkPtr,
-			ErrPtr:            c.ErrPtr,
-			ExpressionFailure: c.ExpressionFailure,
-			dontPanicFlag:     c.dontPanicFlag,
-			Source:            c.Source,
-			parent:            c,
+			DataSubTree:            c.DataSubTree,
+			OkPtr:                  c.OkPtr,
+			ErrPtr:                 c.ErrPtr,
+			ExpressionStatus:       c.ExpressionStatus,
+			dontPanicFlag:          c.dontPanicFlag,
+			Source:                 c.Source,
+			relativePathFromParent: nil,
+			parent:                 c,
 		}
 	} else {
 		c2 = &Config{}
@@ -55,7 +58,8 @@ func (c *Config) GetCurrentLocationPlusPath(pathParts ...string) (path []string)
 	return
 }
 
-// P() does not create a path, if it didn't exist. So, if used with Set(),
+// Traverses the struct down the path.
+// P() does not create a path, if it didn't exist. So, if used before Set(),
 // it will take you as far as there is something, not farther.
 func (c *Config) P(pathParts ...string) *Config {
 	c2 := c.ChildCopy()
@@ -68,6 +72,16 @@ func (c *Config) P(pathParts ...string) *Config {
 	return c2
 }
 
+func (c *Config) DotP(path string) *Config {
+	return c.P(strings.Split(path, ".")...)
+}
+
+func (c *Config) SlashP(path string) *Config {
+	return c.P(strings.Split(path, "/")...)
+}
+
+// Resets any errors, accumulated in previous expressions on this Config object.
+// Sets Ok=true, Err=nil, ExpressionStatus=0_Norm, if any
 func (c *Config) ErrOk() *Config {
 	if c.OkPtr != nil {
 		*c.OkPtr = true
@@ -75,16 +89,18 @@ func (c *Config) ErrOk() *Config {
 	if c.ErrPtr != nil {
 		*c.ErrPtr = nil
 	}
-	c.ExpressionFailure = ExpressionFailure_0_Norm
+	c.ExpressionStatus = ExpressionStatus_0_Norm
 	return c
 }
 
+// Sets ExpressionStatus=failed if it was OK; sets Err, if it wasn't already; sets Ok=false, if it's present;
+// Then panics, unless there is present either of Ok, Err, or dontPanicFlag (it can be set with U()).
 func (c *Config) handleError(err error) {
 	if err == nil {
 		return
 	} else {
-		if c.ExpressionFailure < ExpressionFailure_2_DefaultCallbackAlreadyUsedOnce {
-			c.ExpressionFailure = ExpressionFailure_1_Failed
+		if c.ExpressionStatus < ExpressionStatus_1_Failed {
+			c.ExpressionStatus = ExpressionStatus_1_Failed
 		}
 		if c.ErrPtr != nil {
 			if *c.ErrPtr == nil {
@@ -110,16 +126,16 @@ func (c *Config) isExpressionOk() (ok bool) {
 	if c.OkPtr != nil {
 		return *c.OkPtr == true
 	}
-	return c.ExpressionFailure == ExpressionFailure_0_Norm
+	return c.ExpressionStatus == ExpressionStatus_0_Norm
 }
 
 // Sets a nested config according to a path, relative from current location.
-// Without a Source object set, acts a by-pass to the NonThreadSafe_Set().
+// Without a Source object set, acts as a by-pass to the NonThreadSafe_Set().
 // If you don't want to specify path, and just want to use it from current location,
 // then invoke with nil path, c.Set(nil, value)
 // It is totally asynchronous, and it's effect is somewhat delayed. Use explicit
 // flush signal if you want to synchronize explicitly.
-// P() does not create a path, if it didn't exist. So, if used with Set(),
+// P() does not create a path, if it didn't exist. So, if used before Set(),
 // it will take you as far as there is something, not farther.
 func (c *Config) Set(pathParts []string, v interface{}) {
 	if c.Source == nil {
@@ -161,24 +177,30 @@ func (c *Config) NonThreadSafe_Set(pathParts []string, v interface{}) {
 	}
 }
 
+// Sets dontPanicFlag=true, so that failing operations won't panic, if there's no Err or Ok set.
 func (c *Config) U() (c2 *Config) {
 	c2 = c.ChildCopy()
 	c2.dontPanicFlag = true
 	return c2
 }
 
-func (c *Config) NotU() (c2 *Config) {
+// Reverse of U()
+func (c *Config) UnU() (c2 *Config) {
 	c2 = c.ChildCopy()
 	c2.dontPanicFlag = false
 	return c2
 }
 
+// Attaches a ok bool variable to the expression, by reference, with it's current value.
+// Failures in subsequent operations may set it to false only, so make sure its current state is true.
 func (c *Config) Ok(okRef *bool) (c2 *Config) {
 	c2 = c.ChildCopy()
 	c2.OkPtr = okRef
 	return c2
 }
 
+// Attaches an err error variable to the expression, by reference. Make sure to reset it to nil
+// when reusing between expressions.
 func (c *Config) Err(err *error) (c2 *Config) {
 	c2 = c.ChildCopy()
 	c2.ErrPtr = err
