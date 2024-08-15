@@ -227,3 +227,20 @@ To protect against missing ErrOk(), the logic guards against repeated calls
 of default functions in subsequent expressions, without prior ErrOk(), when
 there's no Err() or Ok() set.
 
+## Preserving default values, if the path is missing
+
+Sometimes we have this situation:
+
+```
+    someVariable = "default value"
+    someVariable = conf.DotP("path.path").String()
+```
+
+Now we want to keep the someVariable with default value, if the value is missing in the config. Of course, we can use `if` with Ok(), but there's simpler idiom for that:
+
+```
+    someVariable = "default value"
+    someVariable = conf.DotP("path.path").String(func() string { return someVariable })
+```
+
+If the value is missing, the same default value will be returned and assigned back to it. This is convenient idiom.

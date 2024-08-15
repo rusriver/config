@@ -29,13 +29,36 @@ func (c *Config) ExtendByEnvs_WithPrefix(prefix string) *Config {
 // and you specify an env var "PRFX_asd-qwe.zxc.123", then this variable will set, and create if
 // necessary, the node at path "asd-qwe.zxc.123". If such names are supported in your OS is up
 // to you, but see the https://stackoverflow.com/questions/2821043/allowed-characters-in-linux-environment-variable-names.
-func (c *Config) ExtendByEnvsV2_WithPrefix(prefix string) {
+// Update: As it turns out, the OS may support it, but the bash didn't, and so you can use it.
+// To solve this issue, I am adding a transformation callback, which can additionally transform
+// the path string, so you can avoid using non-alphanumerics in env names.
+// See also the TranslateEnvs_KeySuffix().
+func (c *Config) ExtendByEnvsV2_WithPrefix(prefix string, transformerFuncs ...func(s string) string) {
 	for _, e := range os.Environ() {
 		pair := strings.SplitN(e, "=", 2)
 		if strings.HasPrefix(pair[0], prefix) {
+			for _, tf := range transformerFuncs {
+				pair[0] = tf(pair[0])
+			}
 			path := strings.Split(pair[0][len(prefix):], ".")
 			value := pair[1]
 			c.Set(path, value)
 		}
 	}
+}
+
+// Does this replacements:
+//
+//	p__ -> "."
+//	d__ -> "-"
+//	u__ -> "__"
+//
+// For example, the line "Somethingp__superd__duper" will become "Something.super-duper".
+// Because the key is located at the end of words, this makes minimal possible impact on
+// readability.
+func TranslateEnvs_KeySuffix(s string) string {
+	s = strings.ReplaceAll(s, "p__", ".")
+	s = strings.ReplaceAll(s, "d__", "-")
+	s = strings.ReplaceAll(s, "u__", "__")
+	return s
 }
