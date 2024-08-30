@@ -49,13 +49,13 @@ func (c *Config) ExtendByEnvsV2_WithPrefix(prefix string, transformerFuncs ...fu
 
 // Does this replacements:
 //
-//	p__ -> "."
-//	d__ -> "-"
-//	u__ -> "__"
+//	p__ -> "." (point)
+//	d__ -> "-" (dash)
+//	u__ -> "__" (underscore)
+//	D__ -> "$" (dollar)
 //
-// For example, the line "Somethingp__superd__duper" will become "Something.super-duper".
-// Because the key is located at the end of words, this makes minimal possible impact on
-// readability.
+// For example, the line "Somethingp__superd__duperp__D__isa" will become "Something.super-duper.$isa".
+// Because the key is located at the end of words, this makes minimal possible impact on readability.
 func TranslateEnvs_KeySuffix(s string) string {
 	s = strings.ReplaceAll(s, "p__", ".")
 	s = strings.ReplaceAll(s, "d__", "-")
