@@ -2,11 +2,17 @@ package config
 
 import (
 	"os"
+	"regexp"
 	"strings"
 	"syscall"
 )
 
+var ReEnvs01 = regexp.MustCompile(`\W`)
+
 // Fetch data from system env using prefix, based on existing config keys.
+// The algorithm: for all possible paths in config do { join by "_"; make uppercase;
+// remove all punctuation except "_"; add prefix; lookup if there is an env with that
+// name; if it is - get its value and set to the config at the path}.
 // VERY IMPORTANT USAGE NOTE: this can override what is already present in the config,
 // but it cannot create new things, which were not in the config.
 func (c *Config) ExtendByEnvs_WithPrefix(prefix string) *Config {
@@ -15,7 +21,9 @@ func (c *Config) ExtendByEnvs_WithPrefix(prefix string) *Config {
 	}
 	paths := getAllPaths(c.DataSubTree)
 	for _, pathParts := range paths {
-		k := strings.ReplaceAll(strings.ToUpper(strings.Join(pathParts, "_")), "-", "")
+		k := strings.Join(pathParts, "_")
+		k = strings.ToUpper(k)
+		k = ReEnvs01.ReplaceAllString(k, "")
 		if val, exist := syscall.Getenv(prefix + k); exist {
 			c.Set(pathParts, val)
 		}
@@ -53,6 +61,7 @@ func (c *Config) ExtendByEnvsV2_WithPrefix(prefix string, transformerFuncs ...fu
 //	d__ -> "-" (dash)
 //	u__ -> "__" (underscore)
 //	D__ -> "$" (dollar)
+//	A__ -> "@" (at)
 //
 // For example, the line "Somethingp__superd__duperp__D__isa" will become "Something.super-duper.$isa".
 // Because the key is located at the end of words, this makes minimal possible impact on readability.
@@ -60,5 +69,7 @@ func TranslateEnvs_KeySuffix(s string) string {
 	s = strings.ReplaceAll(s, "p__", ".")
 	s = strings.ReplaceAll(s, "d__", "-")
 	s = strings.ReplaceAll(s, "u__", "__")
+	s = strings.ReplaceAll(s, "D__", "$")
+	s = strings.ReplaceAll(s, "A__", "@")
 	return s
 }
