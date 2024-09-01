@@ -1,4 +1,4 @@
-# Config [![GoDoc](https://godoc.org/github.com/rusriver/config?status.png)](https://godoc.org/github.com/rusriver/config)
+# Config [![GoDoc](https://godoc.org/github.com/rusriver/config/v2?status.png)](https://godoc.org/github.com/rusriver/config/v2)
 
 Package config provides convenient access methods to configuration stored as JSON or YAML.
 
