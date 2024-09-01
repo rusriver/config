@@ -1,0 +1,5 @@
+- Serk support
+- provide extensive examples of use, suitable for copy-paste
+- repair old original tests
+- refactor it to the MAV model
+

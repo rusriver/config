@@ -1,0 +1,13 @@
+objects:
+  defaults:
+    a: 1
+    b: 2
+  obj-01:
+    $isa: ^.defaults
+    name: obj-01
+  obj-02:
+    $isa: ^.defaults
+    name: obj-02
+  obj-03:
+    $isa: ^.defaults
+    name: obj-03

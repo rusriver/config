@@ -161,6 +161,13 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 	result = readParent(filepath.Dir(ic.FileName), ic.FileName)
 	result.Set([]string{"parent"}, nil)
 	result.Set([]string{"parents"}, nil)
+
+	parentsInherited := make([]string, 0, len(filesAlreadyRead))
+	for k := range filesAlreadyRead {
+		parentsInherited = append(parentsInherited, k)
+	}
+	result.Set([]string{"parents-inherited"}, parentsInherited)
+
 	ic.Logger.Info().Msg("K2aUDgz: reading the config file(s) OK")
 	return
 }

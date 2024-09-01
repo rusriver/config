@@ -1,0 +1,17 @@
+objects:
+    defaults:
+        a: 1
+        b: 2
+    o1:
+        $isa: ^.defaults
+        name: o1
+    array:
+        - $isa: [objects.o1]
+          name: object-01
+        - $isa: [objects.o1, defaults.x1]
+          name: object-02
+
+defaults:
+    x1:
+        b: 20
+        c: 30

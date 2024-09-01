@@ -1,0 +1,13 @@
+objects:
+  $isa: o2
+  object-01:
+    $isa: objects.object-02
+    a: 2
+    b: 3
+  object-02:
+    a: 0
+    c: 4
+
+o2:
+  object-03:
+    x: 1

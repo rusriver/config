@@ -1,23 +1,15 @@
 # Config [![GoDoc](https://godoc.org/github.com/rusriver/config?status.png)](https://godoc.org/github.com/rusriver/config)
 
-Package config provides convenient access methods to configuration
-stored as JSON or YAML.
+Package config provides convenient access methods to configuration stored as JSON or YAML.
 
-This is a fork of [olebedev/config](https://github.com/olebedev/config),
-which in turn is a fork of [original version](https://github.com/moraes/config).
-It has incompatibilities with the original(s), and quite an extended functionality.
-In fact, it has diverged a lot, and continues to.
+Originally this was a fork of [olebedev/config](https://github.com/olebedev/config), which in turn was
+a fork of [moraes/config](https://github.com/moraes/config). Since then it grew and developed quite a lot,
+got quite a lot of new functionality and power, it also has diverged a lot, and continues to. The same time
+it is still the development of the same way of doing things as in the prior works.
 
-Can be used not just as a config, but as a general data model storage, with
-thread-safe high-performance mutability. It has limitations, but if you know
-what this is about, you'll see them yourself. After all, it's open source.
-
-TODO NEXT:
-
-- Serk support
-- provide extensive examples of use, suitable for copy-paste
-- repair old original tests
-- refactor it to the MAV model
+Can be used not just as a config, but as a general data model storage, with thread-safe high-performance
+mutability. It has limitations, but if you know what this is about, you'll see them yourself. After all,
+it's open source, if in doubt - just look at the code.
 
 ## The v2 improvements:
 
@@ -34,13 +26,13 @@ U*() functions are removed. Instead, get-type functions behave this way:
 Path now is specified always in P(), and type parsing happens as separate function,
 and path is specified as a []string. E.g., instead of
 
-```
+```go
     .UDuration("dot.path")
 ```
 
 you now have to write:
 
-```
+```go
     .U().P("dot", "path").Duration()
 ```
 
@@ -50,11 +42,13 @@ the GetNestedConfig() was removed.
 Different mapping rules for env variables - now all dashes are removed. For example,
 if you have a path "a.s-d.f", previously the env variable A_S-D_F would be looked for,
 now it will be A_SD_F. Obviously, both "sd" and "s-d" would map to the same thing,
-but it's not a problem if know about it.
+but it's not a problem if know about it. Update: all punctuations except "_" are removed,
+see the ExtendByEnvs_WithPrefix(), and also added the more powerful alternative the
+ExtendByEnvsV2_WithPrefix().
 
 New idiom to load config, with automatic file type or data format detection:
 
-```
+```go
     var err error
     conf := (&config.InitContext{}).FromFile("filename.yaml").Err(&err).Load()  // detected by suffix
 
@@ -76,7 +70,7 @@ There are three M.O. to use it:
 
 Example of initializing the Source object:
 
-```
+```go
         k.Source = config.NewSource(func (opts *config.NewSource_Options) {
             opts.Config = conf
             opts.Context = ctx
@@ -86,7 +80,7 @@ Example of initializing the Source object:
 
 Example of using the config from the Source:
 
-```
+```go
         conf := k.Source.Config
         // use conf as usual, but update it once in a while
 ```
@@ -111,7 +105,7 @@ buffered, e.g. 10% of ChCmd.
 
 So, if a user wants to make sure its commands took effect, it does this:
 
-```
+```go
 	// sync the config
 	chDown := make(chan struct{})
 	configSource.ChFlushSignal <- &config.MsgFlushSignal{ChDown: chDown}
@@ -128,7 +122,7 @@ you'll hang the whole write-back updater goroutine.
 Repeated use of err, and or misuse of ok, and forgetting to use ErrOk(). No method in this
 library does explicitly sets ok=true, or err=nil, a user must do this itself. For example:
 
-```
+```go
     // This code is totally wrong
 
     var err error
@@ -162,7 +156,7 @@ So how to use it right? Several rules:
 
 Here's the same code, re-written correctly:
 
-```
+```go
     var err error
     ok := true
 
@@ -201,7 +195,7 @@ isn't set"), those values being captured in a closure.
 
 Example:
 
-```
+```go
         caUseSystem = php.ErrOk().P("ca-use-system").Bool(func() {
             return !(len(caCert) > 0)   // caCert is captured in a closure
         })
@@ -231,16 +225,142 @@ there's no Err() or Ok() set.
 
 Sometimes we have this situation:
 
-```
+```go
     someVariable = "default value"
     someVariable = conf.DotP("path.path").String()
 ```
 
 Now we want to keep the someVariable with default value, if the value is missing in the config. Of course, we can use `if` with Ok(), but there's simpler idiom for that:
 
-```
+```go
     someVariable = "default value"
     someVariable = conf.DotP("path.path").String(func() string { return someVariable })
 ```
 
 If the value is missing, the same default value will be returned and assigned back to it. This is convenient idiom.
+
+## Prototype inheritance
+
+We implement two kinds of prototype inheritance - file-level (parenting) and structural ($isa).
+
+File-level ineritance is called "parenting", because you specify file parents for files.
+
+The structural prototype inheritance, or the $isa inheritance, is similar to the parenting,
+except the parenting applies to files, and the $isa applies to the structs inside the already
+loaded data model, after the whole thing is already in memory.
+
+Technically, both the parenting and the $isa are the instances of prototype inheritance,
+just applied to different things at different stages and different levels.
+
+### Parenting
+
+In any configuration file you can specify, at the root level, the field "parent: string", or
+"parents: [string, ...]", and specify parent config files, paths to them.
+
+How does this work:
+
+    1) Load the file;
+    2) Look for fields "parent" or "parents", make a list of parent files;
+    3) For each one - recursively repeat this algorithm, from step 1;
+    4) Apply files on top of each other, in the order they were specified, and the current file apply on top of them all;
+
+In other words: first go deep down the recursion, opening parent files; on returning up, apply each current file
+on top of the parent one.
+
+"Apply" means that when the fields are in conflict between the file we apply and the file we apply it to,
+the fields we apply on top get the priority. I.e., the children has priority on parents.
+
+There's an example of this mechanism in common use - the CSS in Internet browsers. They work by the same
+principle: the styles defined at lower levels in hierarchy take the priority and redefine the styles
+of higher levels of hierarchy. The difference is that here the hierarchy is specified explicitly, multiple
+inheritance is possible, and the processing begins from the element (the file) located at the very bottom
+of the hierarchy.
+
+What it's useful for:
+
+    1) It partically substitutes the functionality of "includes" - you can inherit several files, and they'll be "included" in the main one;
+
+    2) It can be used to specify default values, and have multitude of specialization configs, which are applied on top of the default one;
+
+This functionality is implemented in the `LoadWithParenting()`.
+
+The resulting file get the field `parents-inherited` set at root level, which contains an array of paths
+to all the files inherited. This is useful to see what file took part in it, quickly.
+
+### The $isa
+
+It means the "is-a". Implemented by the `TheIsa()`.
+
+Suppose you have this structure:
+
+```yaml
+        objects:
+            object-01:
+                $isa: objects.object-02
+                a: 2
+                b: 3
+            object-02:
+                a: 0
+                c: 4
+```
+
+After applying the `TheIsa()`, we'll get this YAML equivalent:
+
+```yaml
+        objects:
+            object-01:
+                a: 2
+                b: 3
+                c: 4
+            object-02:
+                a: 0
+                c: 4
+```
+
+First we get the parent object, and apply the current one on top of that. That is, in case of intersections,
+the current one takes the priority.
+
+In this case, concerning the object `objects.object-01`:
+
+1. we took the `objects.object-02`, and made a copy of it;
+2. the "a" got a new value;
+3. added the "b";
+4. the "c" was left as it was, inherited from the prototype;
+
+### The $isa Advanced
+
+Handling the recursion - we do:
+
+- recursive traversal of the tree;
+- hash map to protect against loops;
+- deep copy the isa struct, replace the current, remove the isa key from current, then apply current on the top;
+- after this, re-parse the current structure again, to make sure there's no isa inherited left;
+
+Multiple inheritance - you can specify several parent objects, and they all will be applied in order (just like
+files), and the current one will be on top:
+
+```yaml
+    object-01:
+        $isa: [objects.o1, defaults.x1]
+```
+
+Handling recursion - the re-parse happens when applying each consequtive layer.
+
+Using relative paths:
+
+```yaml
+    objects:
+        defaults:
+            a: 1
+            b: 2
+        obj-01:
+            $isa: ^.defaults
+            name: obj-01
+        obj-02:
+            $isa: ^.defaults
+            name: obj-02
+        obj-03:
+            $isa: ^.defaults
+            name: obj-03
+```
+
