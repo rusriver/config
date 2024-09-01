@@ -3,47 +3,51 @@
 // license that can be found in the LICENSE file.
 
 /*
+--
+-- THIS IS OUTDATED, PLEASE UPDATE
+--
+
 Package config provides convenient access methods to configuration stored as
 JSON or YAML.
 
 Let's start with a simple YAML file config.yml:
 
-    development:
-      database:
-        host: localhost
-      users:
-        - name: calvin
-          password: yukon
-        - name: hobbes
-          password: tuna
-    production:
-      database:
-        host: 192.168.1.1
+	development:
+	  database:
+	    host: localhost
+	  users:
+	    - name: calvin
+	      password: yukon
+	    - name: hobbes
+	      password: tuna
+	production:
+	  database:
+	    host: 192.168.1.1
 
 We can parse it using ParseYaml(), which will return a *Config instance on
 success:
 
-    file, err := os.ReadFile("config.yml")
-    if err != nil {
-		panic(err)
-    }
-    yamlString := string(file)
+	    file, err := os.ReadFile("config.yml")
+	    if err != nil {
+			panic(err)
+	    }
+	    yamlString := string(file)
 
-    cfg, err := config.ParseYaml(yamlString)
+	    cfg, err := config.ParseYaml(yamlString)
 
 An equivalent JSON configuration could be built using ParseJson():
 
-    cfg, err := config.ParseJson(jsonString)
+	cfg, err := config.ParseJson(jsonString)
 
 From now, we can retrieve configuration values using a path in dotted notation:
 
-    // "localhost"
-    host, err := cfg.String("development.database.host")
+	// "localhost"
+	host, err := cfg.String("development.database.host")
 
-    // or...
+	// or...
 
-    // "192.168.1.1"
-    host, err := cfg.String("production.database.host")
+	// "192.168.1.1"
+	host, err := cfg.String("production.database.host")
 
 Besides String(), other types can be fetched directly: Bool(), Float64(),
 Int(), Map() and List(). All these methods will return an error if the path
@@ -53,79 +57,79 @@ requested type.
 A nested configuration can be fetched using Get(). Here we get a new *Config
 instance with a subset of the configuration:
 
-    cfg, err := cfg.GetNestedConfig("development")
+	cfg, err := cfg.GetNestedConfig("development")
 
 Then the inner values are fetched relatively to the subset:
 
-    // "localhost"
-    host, err := cfg.String("database.host")
+	// "localhost"
+	host, err := cfg.String("database.host")
 
 For lists, the dotted path must use an index to refer to a specific value.
 To retrieve the information from a user stored in the configuration above:
 
-    // map[string]interface{}{ ... }
-    user1, err := cfg.Map("development.users.0")
-    // map[string]interface{}{ ... }
-    user2, err := cfg.Map("development.users.1")
+	// map[string]interface{}{ ... }
+	user1, err := cfg.Map("development.users.0")
+	// map[string]interface{}{ ... }
+	user2, err := cfg.Map("development.users.1")
 
-    // or...
+	// or...
 
-    // "calvin"
-    name1, err := cfg.String("development.users.0.name")
-    // "hobbes"
-    name2, err := cfg.String("development.users.1.name")
+	// "calvin"
+	name1, err := cfg.String("development.users.0.name")
+	// "hobbes"
+	name2, err := cfg.String("development.users.1.name")
 
 JSON or YAML strings can be created calling the appropriate Render*()
 functions. Here's how we render a configuration like the one used in these
 examples:
 
-    cfg := map[string]interface{}{
-        "development": map[string]interface{}{
-            "database": map[string]interface{}{
-                "host": "localhost",
-            },
-            "users": []interface{}{
-                map[string]interface{}{
-                    "name":     "calvin",
-                    "password": "yukon",
-                },
-                map[string]interface{}{
-                    "name":     "hobbes",
-                    "password": "tuna",
-                },
-            },
-        },
-        "production": map[string]interface{}{
-            "database": map[string]interface{}{
-                "host": "192.168.1.1",
-            },
-        },
-    }
+	cfg := map[string]interface{}{
+	    "development": map[string]interface{}{
+	        "database": map[string]interface{}{
+	            "host": "localhost",
+	        },
+	        "users": []interface{}{
+	            map[string]interface{}{
+	                "name":     "calvin",
+	                "password": "yukon",
+	            },
+	            map[string]interface{}{
+	                "name":     "hobbes",
+	                "password": "tuna",
+	            },
+	        },
+	    },
+	    "production": map[string]interface{}{
+	        "database": map[string]interface{}{
+	            "host": "192.168.1.1",
+	        },
+	    },
+	}
 
-    json, err := config.RenderJson(cfg)
+	json, err := config.RenderJson(cfg)
 
-    // or...
+	// or...
 
-    yaml, err := config.RenderYaml(cfg)
+	yaml, err := config.RenderYaml(cfg)
 
 This results in a configuration string to be stored in a file or database.
 
 For more more convenience it can parse OS environment variables and command line arguments.
 
-    cfg, err := config.ParseYaml(yamlString)
-    cfg.Env()
+	cfg, err := config.ParseYaml(yamlString)
+	cfg.Env()
 
-    // or
+	// or
 
-    cfg.Flag()
+	cfg.Flag()
 
 We can also specify the order of parsing:
 
-    cfg.Env().Flag()
+	cfg.Env().Flag()
 
-    // or
+	// or
 
-    cfg.Flag().Env()
+	cfg.Flag().Env()
 
 In case of OS environment all existing at the moment of parsing keys will be scanned in OS environment,
 but in uppercase and the separator will be `_` instead of a `.`. If EnvPrefix() is used the given prefix
@@ -136,11 +140,11 @@ For see existing keys we can run application with `-h`.
 
 We can use unsafe method to get value:
 
-  // ""
-  cfg.UString("undefined.key")
+	// ""
+	cfg.UString("undefined.key")
 
-  // or with default value
-  unsafeValue := cfg.UString("undefined.key", "default value")
+	// or with default value
+	unsafeValue := cfg.UString("undefined.key", "default value")
 
 There is unsafe methods, like regular, but wuth prefix `U`.
 */
