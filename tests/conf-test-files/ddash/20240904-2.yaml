@@ -1,0 +1,10 @@
+x: BUTTERFLY
+bb:
+  x1:
+    $isa: z.x.c1.${x}
+    s: example.com
+  x2:
+    $isa: z.x.c2.${x}
+    s: example.com
+  $-: string-interpolate ^.x1.$isa ^.x2.$isa
+

@@ -1,0 +1,22 @@
+o:
+  o1:
+    a: 1
+    b: 2
+    name: o1
+  array:
+    - name: object-01
+    - name: object-02
+d:
+  x1:
+    b: 20
+    c: 30
+    $-: set o.array.4.name new-object-03
+
+d2:
+  x1:
+    b: 20
+    c: 30
+    $-:
+      - set o.array.4.vv1 77
+      - set o.array.4.vv2 88
+

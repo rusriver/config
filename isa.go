@@ -33,22 +33,25 @@ func (ctx *TreeTraversalContext) resolveRelativePaths_TreeTraversal(nodeName str
 
 		// traverse the tree depth-first
 		for k, v := range nv {
+			if k == "$isa" {
+				continue
+			}
 			nv[k] = ctx.resolveRelativePaths_TreeTraversal(k, v)
 		}
 
 		// back again - handle the $isa
 		if isaObject, ok := nv["$isa"]; ok {
 
-			switch isaObject2 := isaObject.(type) {
+			switch isaObject := isaObject.(type) {
 			case string:
-				nv["$isa"] = ctx.getAbsPath(isaObject2)
+				nv["$isa"] = ctx.getAbsPath(isaObject)
 
 			case []any:
 				paths := make([]any, 0, 8)
-				for _, isaPath3 := range isaObject2 {
-					switch isaPath4 := isaPath3.(type) {
+				for _, isaPath := range isaObject {
+					switch isaPath := isaPath.(type) {
 					case string:
-						paths = append(paths, ctx.getAbsPath(isaPath4))
+						paths = append(paths, ctx.getAbsPath(isaPath))
 					}
 				}
 				nv["$isa"] = paths
@@ -81,6 +84,9 @@ func (ctx *TreeTraversalContext) applyTheIsa_TreeTraversal(nodeName string, node
 
 		// traverse the tree depth-first
 		for k, v := range nv {
+			if k == "$isa" {
+				continue
+			}
 			nv[k] = ctx.applyTheIsa_TreeTraversal(k, v)
 		}
 
@@ -89,23 +95,23 @@ func (ctx *TreeTraversalContext) applyTheIsa_TreeTraversal(nodeName string, node
 
 			paths := make([]string, 0, 8)
 
-			switch isaObject2 := isaObject.(type) {
+			switch isaObject := isaObject.(type) {
 			case string:
-				paths = append(paths, isaObject2)
+				paths = append(paths, isaObject)
 
 			case []any:
-				for _, isaPath3 := range isaObject2 {
-					switch isaPath4 := isaPath3.(type) {
+				for _, isaPath := range isaObject {
+					switch isaPath := isaPath.(type) {
 					case string:
-						paths = append(paths, isaPath4)
+						paths = append(paths, isaPath)
 					}
 				}
 
 			}
 			node = ctx.applyTheIsa_DoMultipleInheritance(paths, node)
-			switch nv := node.(type) {
+			switch node := node.(type) {
 			case map[string]any:
-				delete(nv, "$isa")
+				delete(node, "$isa")
 			}
 			node = ctx.applyTheIsa_TreeTraversal(nodeName, node) // repeat itself until there's no $isa left
 		}
