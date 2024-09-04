@@ -393,3 +393,10 @@ It supports integrity checks of source config files:
 This main purpose is to tie test config files to tests, but can also be used for
 other purposes as well.
 
+## DDash language support
+
+- set
+- string-interpolate
+- append (thread-unsafe (to be improved))
+
+See tests for usage examples.

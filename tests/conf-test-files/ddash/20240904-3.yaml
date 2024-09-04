@@ -1,0 +1,8 @@
+array:
+  - host1.com
+  - host2.com
+  - host3.com
+
+$-:
+  - append array host53.com
+  - append array host54.com

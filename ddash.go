@@ -93,5 +93,14 @@ func (ctx *TreeTraversalContext) ddash_CmdExec(raw string) {
 			ctx.root.Set(strings.Split(p, "."), v)
 		}
 
+	case "append":
+		p := ctx.getAbsPath(cmdArray[1])
+		c := ctx.root.DotP(p)
+		switch a := c.DataSubTree.(type) {
+		case []any:
+			a = append(a, cmdArray[2])
+			ctx.root.Set(strings.Split(p, "."), a)
+		}
+
 	} // switch
 }
