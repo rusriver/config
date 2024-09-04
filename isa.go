@@ -9,14 +9,8 @@ import (
 	"github.com/rusriver/config/v2/deepcopy"
 )
 
-type theIsaContext struct {
-	root            *Config
-	antiLoopMap     map[string]bool
-	currentLocation *Location
-}
-
 func (c *Config) TheIsa() {
-	ctx := &theIsaContext{
+	ctx := &TreeTraversalContext{
 		root:            c,
 		antiLoopMap:     make(map[string]bool),
 		currentLocation: &Location{},
@@ -26,7 +20,7 @@ func (c *Config) TheIsa() {
 	c.DataSubTree = ctx.applyTheIsa_TreeTraversal("", c.DataSubTree)
 }
 
-func (ctx *theIsaContext) resolveRelativePaths_TreeTraversal(nodeName string, node any) any {
+func (ctx *TreeTraversalContext) resolveRelativePaths_TreeTraversal(nodeName string, node any) any {
 	if len(nodeName) > 0 {
 		ctx.currentLocation.Push(nodeName)
 		defer func() {
@@ -72,7 +66,7 @@ func (ctx *theIsaContext) resolveRelativePaths_TreeTraversal(nodeName string, no
 	return node
 }
 
-func (ctx *theIsaContext) applyTheIsa_TreeTraversal(nodeName string, node any) any {
+func (ctx *TreeTraversalContext) applyTheIsa_TreeTraversal(nodeName string, node any) any {
 	if len(nodeName) > 0 {
 		ctx.currentLocation.Push(nodeName)
 		defer func() {
@@ -126,7 +120,7 @@ func (ctx *theIsaContext) applyTheIsa_TreeTraversal(nodeName string, node any) a
 	return node
 }
 
-func (ctx *theIsaContext) applyTheIsa_DoMultipleInheritance(isaPaths []string, aLast any) any {
+func (ctx *TreeTraversalContext) applyTheIsa_DoMultipleInheritance(isaPaths []string, aLast any) any {
 	p1 := isaPaths[0]
 	isaPaths = isaPaths[1:]
 
@@ -165,37 +159,4 @@ func (ctx *theIsaContext) applyTheIsa_DoMultipleInheritance(isaPaths []string, a
 	// (&Config{DataSubTree: newBaseObject}).PrintJson("FIRST OBJECT 165 " + uuid) //--==
 
 	return newBaseObject
-}
-
-func (ctx *theIsaContext) getAbsPath(p string) string {
-	n, p := ctx.howManyLevelsBackUp(p)
-	len_cl := len(*ctx.currentLocation)
-	if n > 0 && len_cl > 0 {
-		if n > len_cl {
-			n = len_cl
-		}
-		p = strings.Join((*ctx.currentLocation)[:len_cl-n], ".") + "." + p
-	}
-	return p
-}
-
-func (ctx *theIsaContext) howManyLevelsBackUp(p string) (n int, p2 string) {
-	p2 = p
-	for _, c := range p {
-		switch c {
-		case '^':
-			n++
-		case '.':
-			break
-		}
-	}
-	p = p[n:]
-	if n > 0 && len(p) > 0 {
-		if p[0] == '.' {
-			p = p[1:]
-		} else {
-			panic(fmt.Errorf("4114a72ea601 Invalid path syntax in $isa, '%v'", p2))
-		}
-	}
-	return n, p
 }

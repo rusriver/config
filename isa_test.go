@@ -25,7 +25,7 @@ func Test_Isa_1(t *testing.T) {
 					fmt.Println(cas.N, x)
 				}
 			}()
-			n, p := (&theIsaContext{}).howManyLevelsBackUp(cas.p)
+			n, p := (&TreeTraversalContext{}).howManyLevelsBackUp(cas.p)
 			fmt.Println(cas.N, n, p)
 		}()
 	}
