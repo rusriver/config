@@ -12,9 +12,17 @@ import (
 func Test_ConfigInheritance_1_0(t *testing.T) {
 	var err error
 	conf := (&config.InitContext{}).
-		FromFile("conf-test-files/config.yaml").
+		FromFile("conf-test-files/config.yaml",
+			"W7vJif0qw764-gXERIZ2HyQ0Rg0yvX5FnRc1USNAynI=",
+			"ldtT3WFuCGSdXyGr5jUvibkNVLJzmlS_ajJzip95jEc=",
+			"Kc_snY875G-uzwdVXGRpV-h8o7AodUgF_MfAugsx2PA=",
+			"yEsexBCPF8HP86euYrrpDIrK7JHLrrVMhBUJFvYqWsE=",
+			"Jo0cHrhVyEwtjIIApxQ0i_fr5UqsOOcE9Y6tWQlKGoM=",
+		).
 		Err(&err).
 		LoadWithParenting()
+
+	fmt.Println("CONFIG HASHES:", conf.InitContext.SourceHashesActual)
 
 	conf.PrintJson("1")
 }
@@ -25,6 +33,8 @@ func Test_20230620_1(t *testing.T) {
 		FromFile("conf-test-files/c2.yaml").
 		Err(&err).
 		Load()
+
+	fmt.Println("CONFIG HASHES:", conf.InitContext.SourceHashesActual)
 
 	conf.PrintJson("1")
 

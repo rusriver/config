@@ -1,7 +1,12 @@
 package config
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
+	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"regexp"
 
@@ -10,20 +15,28 @@ import (
 )
 
 type InitContext struct {
-	FileName string
-	Data     []byte
-	Logger   *zerolog.Logger
-	ErrPtr   *error
-	OkPtr    *bool
+	CurrentFileName      string
+	SourceHashesRequired []string
+	SourceHashesActual   []string
+	Data                 []byte
+	Logger               *zerolog.Logger
+	ErrPtr               *error
+	OkPtr                *bool
 }
 
-func (ic *InitContext) FromFile(fileName string) *InitContext {
-	ic.FileName = fileName
+func (ic *InitContext) FromFile(fileName string, hashes ...string) *InitContext {
+	ic.CurrentFileName = fileName
+	if len(hashes) > 0 {
+		ic.SourceHashesRequired = hashes
+	}
 	return ic
 }
 
-func (ic *InitContext) FromBytes(data []byte) *InitContext {
+func (ic *InitContext) FromBytes(data []byte, hashes ...string) *InitContext {
 	ic.Data = data
+	if len(hashes) > 0 {
+		ic.SourceHashesRequired = hashes
+	}
 	return ic
 }
 
@@ -48,10 +61,19 @@ var reSuffixJson = regexp.MustCompile(`\.(JSON|json)\s*$`)
 func (ic *InitContext) Load() *Config {
 	var c *Config
 	var err error
+	var hash string
 
 	func() {
+		hasher := sha256.New()
 		switch {
 		case len(ic.Data) > 0:
+			hasher.Write(ic.Data)
+			hash = base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+			if !ic.sourceHashIsCorrect(hash) {
+				err = fmt.Errorf("incorrect integrity hash '%v' at data", hash)
+				return
+			}
+
 			// c, err = parseSerk(ic.Data)
 			// if err == nil {
 			// 	return
@@ -63,13 +85,28 @@ func (ic *InitContext) Load() *Config {
 			c, err = parseJson(ic.Data)
 			return
 
-		case len(ic.FileName) > 0:
-			switch {
-			case reSuffixYaml.MatchString(ic.FileName) == true:
-				c, err = parseYamlFile(ic.FileName)
+		case len(ic.CurrentFileName) > 0:
+			var f *os.File
+			f, err = os.Open(ic.CurrentFileName)
+			if err != nil {
 				return
-			case reSuffixJson.MatchString(ic.FileName) == true:
-				c, err = parseJsonFile(ic.FileName)
+			}
+			defer f.Close()
+			if _, err = io.Copy(hasher, f); err != nil {
+				return
+			}
+			hash = base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+			if !ic.sourceHashIsCorrect(hash) {
+				err = fmt.Errorf("incorrect integrity hash '%v' at file '%v'", hash, ic.CurrentFileName)
+				return
+			}
+
+			switch {
+			case reSuffixYaml.MatchString(ic.CurrentFileName) == true:
+				c, err = parseYamlFile(ic.CurrentFileName)
+				return
+			case reSuffixJson.MatchString(ic.CurrentFileName) == true:
+				c, err = parseJsonFile(ic.CurrentFileName)
 				return
 			default:
 				err = errors.New("unknown file suffix")
@@ -94,9 +131,12 @@ func (ic *InitContext) Load() *Config {
 		return nil
 	}
 
+	ic.SourceHashesActual = append(ic.SourceHashesActual, hash)
+
 	// this does inherit these..
 	c.ErrPtr = ic.ErrPtr
 	c.OkPtr = ic.OkPtr
+	c.InitContext = ic
 
 	return c
 }
@@ -117,7 +157,8 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 		logger.Info().Msgf("EZWLkX: reading the config file '%v'...", currConfigFileName)
 		filesAlreadyRead[currConfigFileName] = true
 		var err error
-		conf := (&InitContext{FileName: currConfigFileName}).Err(&err).Load()
+		ic.CurrentFileName = currConfigFileName
+		conf := ic.Err(&err).Load()
 		if err != nil {
 			logger.Err(err).Msgf("fYmNdkUt: config.ParseYamlFile('%v') failed", currConfigFileName)
 			panic(err)
@@ -158,7 +199,7 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 		}
 		return conf
 	}
-	result = readParent(filepath.Dir(ic.FileName), ic.FileName)
+	result = readParent(filepath.Dir(ic.CurrentFileName), ic.CurrentFileName)
 	result.Set([]string{"parent"}, nil)
 	result.Set([]string{"parents"}, nil)
 
@@ -170,4 +211,18 @@ func (ic *InitContext) LoadWithParenting() (result *Config) {
 
 	ic.Logger.Info().Msg("K2aUDgz: reading the config file(s) OK")
 	return
+}
+
+func (ic *InitContext) sourceHashIsCorrect(hash string) (ok bool) {
+	if len(ic.SourceHashesRequired) == 0 {
+		return true
+	}
+	i1 := len(ic.SourceHashesActual)
+	if i1 >= len(ic.SourceHashesRequired) {
+		return false
+	}
+	if ic.SourceHashesRequired[i1] != hash {
+		return false
+	}
+	return true
 }

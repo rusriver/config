@@ -12,7 +12,8 @@ type Config struct {
 	ErrPtr                 *error
 	ExpressionStatus       ExpressionFailure
 	dontPanicFlag          bool
-	Source                 *Source `json:"-"`
+	Source                 *Source      `json:"-"`
+	InitContext            *InitContext `json:"-"`
 	relativePathFromParent []string
 	parent                 *Config
 }
@@ -35,6 +36,7 @@ func (c *Config) ChildCopy() (c2 *Config) {
 			ExpressionStatus:       c.ExpressionStatus,
 			dontPanicFlag:          c.dontPanicFlag,
 			Source:                 c.Source,
+			InitContext:            c.InitContext,
 			relativePathFromParent: nil,
 			parent:                 c,
 		}

@@ -4,6 +4,7 @@ objects:
         b: 2
     o1:
         $isa: ^.defaults
+        o1_v: 15
         name: o1
     oMultiple:
         $isa: [objects.o1, defaults.x1]

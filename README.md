@@ -11,6 +11,12 @@ Can be used not just as a config, but as a general data model storage, with thre
 mutability. It has limitations, but if you know what this is about, you'll see them yourself. After all,
 it's open source, if in doubt - just look at the code.
 
+---
+20240900 Announcement: Further development will be in the /v3 folder, and will not be backward compatible.
+This is production-grade version, but for new projects consider using /v3 instead.
+
+---
+
 ## The v2 improvements:
 
 U*() functions are removed. Instead, get-type functions behave this way:
@@ -363,4 +369,27 @@ Using relative paths:
             $isa: ^.defaults
             name: obj-03
 ```
+
+## Integrity checks
+
+It supports integrity checks of source config files:
+
+```go
+	var err error
+	conf := (&config.InitContext{}).
+		FromFile("conf-test-files/config.yaml",
+			"W7vJif0qw764-gXERIZ2HyQ0Rg0yvX5FnRc1USNAynI=",
+			"ldtT3WFuCGSdXyGr5jUvibkNVLJzmlS_ajJzip95jEc=",
+			"Kc_snY875G-uzwdVXGRpV-h8o7AodUgF_MfAugsx2PA=",
+			"yEsexBCPF8HP86euYrrpDIrK7JHLrrVMhBUJFvYqWsE=",
+			"Jo0cHrhVyEwtjIIApxQ0i_fr5UqsOOcE9Y6tWQlKGoM=",
+		).
+		Err(&err).
+		LoadWithParenting()
+
+	fmt.Println("CONFIG HASHES:", conf.InitContext.SourceHashesActual)
+```
+
+This main purpose is to tie test config files to tests, but can also be used for
+other purposes as well.
 
