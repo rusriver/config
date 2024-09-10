@@ -1,6 +1,13 @@
+### todo:
+- repair old original tests
+
+---
+
 # Config [![GoDoc](https://godoc.org/github.com/rusriver/config/v2?status.png)](https://godoc.org/github.com/rusriver/config/v2)
 
 Package config provides convenient access methods to configuration stored as JSON or YAML.
+
+This is production-grade version, care is taken to maintain it backward compatible and reliable.
 
 Originally this was a fork of [olebedev/config](https://github.com/olebedev/config), which in turn was
 a fork of [moraes/config](https://github.com/moraes/config). Since then it grew and developed quite a lot,
@@ -11,11 +18,14 @@ Can be used not just as a config, but as a general data model storage, with thre
 mutability. It has limitations, but if you know what this is about, you'll see them yourself. After all,
 it's open source, if in doubt - just look at the code.
 
----
-20240900 Announcement: Further development will be in the /v3 folder, and will not be backward compatible.
-This is production-grade version, but for new projects consider using /v3 instead.
+## Synopsis
 
----
+```go
+	c1 := (&config.InitContext{}).FromFile(
+		"conf-test-files/ddash/20240904-1.yaml",
+		"FstTSOp-9WeXmf0h-RFB9rXVPEcnM43_JD1lfBEuga8=",
+	).Load().U()
+```
 
 ## The v2 improvements:
 
@@ -400,3 +410,25 @@ other purposes as well.
 - append (thread-unsafe (to be improved))
 
 See tests for usage examples.
+
+## Concurrent write idiom:
+
+In updater G, single one:
+
+```go
+    conf2 := conf.DeepCopy()
+    conf2.Set(path, value)
+    conf.SwapToNewVersion(conf2)
+```
+
+In the G, who wants to write:
+
+```go
+    conf.SendSet(path, value) // works via chan
+```
+
+In any concurrent user G:
+
+- Always periodically get the conf from centralized place, because the  pointer may change.
+
+

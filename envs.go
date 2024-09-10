@@ -15,6 +15,13 @@ var ReEnvs01 = regexp.MustCompile(`\W`)
 // name; if it is - get its value and set to the config at the path}.
 // VERY IMPORTANT USAGE NOTE: this can override what is already present in the config,
 // but it cannot create new things, which were not in the config.
+//
+// In case of OS environment all existing at the moment of parsing keys will be scanned in OS environment,
+// but in uppercase and the separator will be `_` instead of a `.`. If EnvPrefix() is used the given prefix
+// will be used to lookup the environment variable, e.g PREFIX_FOO_BAR will set foo.bar.
+// In case of flags separator will be `-`.
+// In case of command line arguments possible to use regular dot notation syntax for all keys.
+// For see existing keys we can run application with `-h`.
 func (c *Config) ExtendByEnvs_WithPrefix(prefix string) *Config {
 	if prefix != "" {
 		prefix = strings.ToUpper(prefix) + "_"
