@@ -126,7 +126,7 @@ func (c *Config) isExpressionOk() (ok bool) {
 		return *c.ErrPtr == nil
 	}
 	if c.OkPtr != nil {
-		return *c.OkPtr == true
+		return *c.OkPtr
 	}
 	return c.ExpressionStatus == ExpressionStatus_0_Norm
 }

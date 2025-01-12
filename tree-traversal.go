@@ -35,12 +35,13 @@ func (ctx *TreeTraversalContext) getAbsPath(p string) string {
 
 func (ctx *TreeTraversalContext) howManyLevelsBackUp(p string) (n int, p2 string) {
 	p2 = p
+L:
 	for _, c := range p {
 		switch c {
 		case '^':
 			n++
 		case '.':
-			break
+			break L
 		}
 	}
 	p = p[n:]

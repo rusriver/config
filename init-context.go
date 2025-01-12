@@ -102,10 +102,10 @@ func (ic *InitContext) Load() *Config {
 			}
 
 			switch {
-			case reSuffixYaml.MatchString(ic.CurrentFileName) == true:
+			case reSuffixYaml.MatchString(ic.CurrentFileName):
 				c, err = parseYamlFile(ic.CurrentFileName)
 				return
-			case reSuffixJson.MatchString(ic.CurrentFileName) == true:
+			case reSuffixJson.MatchString(ic.CurrentFileName):
 				c, err = parseJsonFile(ic.CurrentFileName)
 				return
 			default:

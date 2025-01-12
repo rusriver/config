@@ -84,7 +84,7 @@ func (c *Config) Int(defaultValueFunc ...func() int) int {
 		if i := int(n); float64(i) == n {
 			return i
 		}
-		c.handleError(fmt.Errorf("Value can't be converted to int: %v", n))
+		c.handleError(fmt.Errorf("value can't be converted to int: %v", n))
 		if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
 			if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 				panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)

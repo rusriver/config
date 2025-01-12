@@ -93,7 +93,7 @@ func (c *Config) ListInt(defaultValueFunc ...func() []int) []int {
 			if i := int(n); float64(i) == n {
 				v = i
 			} else {
-				c.handleError(fmt.Errorf("Value can't be converted to int: %v", n))
+				c.handleError(fmt.Errorf("value can't be converted to int: %v", n))
 				return undef
 			}
 		case int:
