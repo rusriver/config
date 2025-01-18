@@ -142,7 +142,7 @@ func (c *Config) isExpressionOk() (ok bool) {
 func (c *Config) Set(pathParts []string, v interface{}) {
 	if c.Source == nil {
 		// Current location is implicit, by Config object
-		c.NonThreadSafe_Set(pathParts, v)
+		c.Set_ThreadUnsafe(pathParts, v)
 		return
 	} else {
 		// We need an absolute full path to current location, in this case.
@@ -172,7 +172,7 @@ func (c *Config) Set(pathParts []string, v interface{}) {
 // Sets a nested config according to a path, relative from current location.
 // If you don't want to specify path, and just want to use it from current location,
 // then invoke with nil path.
-func (c *Config) NonThreadSafe_Set(pathParts []string, v interface{}) {
+func (c *Config) Set_ThreadUnsafe(pathParts []string, v interface{}) {
 	err := set(c.DataSubTree, pathParts, v)
 	if err != nil {
 		c.handleError(err)

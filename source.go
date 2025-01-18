@@ -83,7 +83,7 @@ func (s *Source) theWriteBackUpdaterG() {
 					c2.DataSubTree = deepcopy.Copy(c2.DataSubTree)
 					xCloned = true
 				}
-				c2.NonThreadSafe_Set(msg.FullPath, msg.V)
+				c2.Set_ThreadUnsafe(msg.FullPath, msg.V)
 			}
 		}
 
