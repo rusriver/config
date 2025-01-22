@@ -193,6 +193,15 @@ func (c *Config) UnU() (c2 *Config) {
 	return c2
 }
 
+// Useful if you want to work with exceptions
+func (c *Config) Raisable() (c2 *Config) {
+	c2 = c.ChildCopy()
+	c2.dontPanicFlag = false
+	c2.ErrPtr = nil
+	c2.OkPtr = nil
+	return c2
+}
+
 // Attaches a ok bool variable to the expression, by reference, with it's current value.
 // Failures in subsequent operations may set it to false only, so make sure its current state is true.
 func (c *Config) Ok(okRef *bool) (c2 *Config) {
