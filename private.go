@@ -41,7 +41,7 @@ func goByPath(c interface{}, pathParts []string) (interface{}, error) {
 			if k == 0 {
 				pathParts = pathParts[1:]
 			} else {
-				return nil, fmt.Errorf("invalid path %q", strings.Join(pathParts, "."))
+				return nil, fmt.Errorf("4943420f0e61 invalid path %q", strings.Join(pathParts, "."))
 			}
 		}
 	}
@@ -54,23 +54,23 @@ func goByPath(c interface{}, pathParts []string) (interface{}, error) {
 					c = cv[i]
 				} else {
 					return nil, fmt.Errorf(
-						"index out of range at %q: list has only %v items",
+						"c468dae22fc6 index out of range at %q: list has only %v items",
 						strings.Join(pathParts[:pos+1], "."), len(cv))
 				}
 			} else {
-				return nil, fmt.Errorf("invalid list index at %q",
+				return nil, fmt.Errorf("5994f468d210 invalid list index at %q",
 					strings.Join(pathParts[:pos+1], "."))
 			}
 		case map[string]interface{}:
 			if value, ok := cv[part]; ok {
 				c = value
 			} else {
-				return nil, fmt.Errorf("nonexistent map key at %q",
+				return nil, fmt.Errorf("e6269413b51b nonexistent map key at %q",
 					strings.Join(pathParts[:pos+1], "."))
 			}
 		default:
 			return nil, fmt.Errorf(
-				"invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
+				"51a5d1f36f0f invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
 				strings.Join(pathParts[:pos+1], "."), c)
 		}
 	}
@@ -86,7 +86,7 @@ func set(c interface{}, pathParts []string, value interface{}) error {
 			if k == 0 {
 				pathParts = pathParts[1:]
 			} else {
-				return fmt.Errorf("invalid path %q", pathParts)
+				return fmt.Errorf("c483d3a81d6f invalid path %q", pathParts)
 			}
 		}
 	}
@@ -148,7 +148,7 @@ func set(c interface{}, pathParts []string, value interface{}) error {
 				}
 
 			} else {
-				return fmt.Errorf("invalid list index at %q",
+				return fmt.Errorf("cd1082229809 invalid list index at %q",
 					strings.Join(pathParts[:pathPart_i+1], "."))
 			}
 
@@ -202,7 +202,7 @@ func set(c interface{}, pathParts []string, value interface{}) error {
 
 		default:
 			return fmt.Errorf(
-				"invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
+				"12decb88247a invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
 				strings.Join(pathParts[:pathPart_i+1], "."), now_typed)
 		}
 	}
@@ -211,7 +211,7 @@ func set(c interface{}, pathParts []string, value interface{}) error {
 
 // typeMismatchError returns an error for an expected type.
 func typeMismatchError(expected string, got interface{}) error {
-	return fmt.Errorf("type mismatch: expected %s; got %T", expected, got)
+	return fmt.Errorf("8fc1e9d187b4 type mismatch: expected %s; got %T", expected, got)
 }
 
 // normalizeValue normalizes a unmarshalled value. This is needed because
@@ -223,11 +223,11 @@ func normalizeValue(value interface{}) (interface{}, error) {
 		for k, v := range value {
 			key, ok := k.(string)
 			if !ok {
-				return nil, fmt.Errorf("unsupported map key: %#v", k)
+				return nil, fmt.Errorf("16510bb19bd6 unsupported map key: %#v", k)
 			}
 			item, err := normalizeValue(v)
 			if err != nil {
-				return nil, fmt.Errorf("unsupported map value: %#v", v)
+				return nil, fmt.Errorf("068384cb2649 unsupported map value: %#v", v)
 			}
 			node[key] = item
 		}
@@ -237,7 +237,7 @@ func normalizeValue(value interface{}) (interface{}, error) {
 		for key, v := range value {
 			item, err := normalizeValue(v)
 			if err != nil {
-				return nil, fmt.Errorf("unsupported map value: %#v", v)
+				return nil, fmt.Errorf("fd012de9b048 unsupported map value: %#v", v)
 			}
 			node[key] = item
 		}
@@ -247,7 +247,7 @@ func normalizeValue(value interface{}) (interface{}, error) {
 		for key, v := range value {
 			item, err := normalizeValue(v)
 			if err != nil {
-				return nil, fmt.Errorf("unsupported list item: %#v", v)
+				return nil, fmt.Errorf("041d7d49553d unsupported list item: %#v", v)
 			}
 			node[key] = item
 		}
@@ -255,5 +255,5 @@ func normalizeValue(value interface{}) (interface{}, error) {
 	case bool, float64, int, string, nil:
 		return value, nil
 	}
-	return nil, fmt.Errorf("unsupported type: %T", value)
+	return nil, fmt.Errorf("93be153f9ee1 unsupported type: %T", value)
 }

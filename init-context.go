@@ -70,7 +70,7 @@ func (ic *InitContext) Load() *Config {
 			hasher.Write(ic.Data)
 			hash = base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 			if !ic.sourceHashIsCorrect(hash) {
-				err = fmt.Errorf("incorrect integrity hash '%v' at data", hash)
+				err = fmt.Errorf("c6d2d486b761 incorrect integrity hash '%v' at data", hash)
 				return
 			}
 
@@ -97,7 +97,7 @@ func (ic *InitContext) Load() *Config {
 			}
 			hash = base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 			if !ic.sourceHashIsCorrect(hash) {
-				err = fmt.Errorf("incorrect integrity hash '%v' at file '%v'", hash, ic.CurrentFileName)
+				err = fmt.Errorf("88085ecfd247 incorrect integrity hash '%v' at file '%v'", hash, ic.CurrentFileName)
 				return
 			}
 
@@ -109,11 +109,11 @@ func (ic *InitContext) Load() *Config {
 				c, err = parseJsonFile(ic.CurrentFileName)
 				return
 			default:
-				err = errors.New("unknown file suffix")
+				err = errors.New("d1fb726ba28f unknown file suffix")
 				return
 			}
 		default:
-			err = errors.New("data or file not specified")
+			err = errors.New("002da7bd25a3 data or file not specified")
 			return
 		}
 	}()

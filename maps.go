@@ -92,7 +92,7 @@ func (c *Config) MapInt(defaultValueFunc ...func() map[string]int) map[string]in
 			if i := int(n); float64(i) == n {
 				v = i
 			} else {
-				c.handleError(fmt.Errorf("value can't be converted to int: %v", n))
+				c.handleError(fmt.Errorf("feec232b652f value can't be converted to int: %v", n))
 				if len(defaultValueFunc) > 0 && !c.isExpressionOk() {
 					if c.ExpressionStatus == ExpressionStatus_2_DefaultCallbackAlreadyUsedOnce {
 						panic(ErrMsg_MultipleCallbackWithoutPriorErrOk)
