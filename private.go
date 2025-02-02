@@ -217,17 +217,24 @@ func typeMismatchError(expected string, got interface{}) error {
 // normalizeValue normalizes a unmarshalled value. This is needed because
 // encoding/json doesn't support marshalling map[interface{}]interface{}.
 func normalizeValue(value interface{}) (interface{}, error) {
+	CurrPath := &CurrPath{}
+	return normalizeValue_2(CurrPath, value)
+}
+
+func normalizeValue_2(currPath *CurrPath, value interface{}) (interface{}, error) {
 	switch value := value.(type) {
 	case map[interface{}]interface{}:
 		node := make(map[string]interface{}, len(value))
 		for k, v := range value {
 			key, ok := k.(string)
 			if !ok {
-				return nil, fmt.Errorf("16510bb19bd6 unsupported map key: %#v", k)
+				return nil, fmt.Errorf("16510bb19bd6, at %v, unsupported map key: %#v", currPath, k)
 			}
-			item, err := normalizeValue(v)
+			currPath.Push(key)
+			item, err := normalizeValue_2(currPath, v)
+			currPath.Pop()
 			if err != nil {
-				return nil, fmt.Errorf("068384cb2649 unsupported map value: %#v", v)
+				return nil, fmt.Errorf("068384cb2649, at %v, unsupported map value: %v", currPath, err)
 			}
 			node[key] = item
 		}
@@ -235,25 +242,29 @@ func normalizeValue(value interface{}) (interface{}, error) {
 	case map[string]interface{}:
 		node := make(map[string]interface{}, len(value))
 		for key, v := range value {
-			item, err := normalizeValue(v)
+			currPath.Push(key)
+			item, err := normalizeValue_2(currPath, v)
+			currPath.Pop()
 			if err != nil {
-				return nil, fmt.Errorf("fd012de9b048 unsupported map value: %#v", v)
+				return nil, fmt.Errorf("fd012de9b048, at %v, unsupported map value: %v", currPath, err)
 			}
 			node[key] = item
 		}
 		return node, nil
 	case []interface{}:
 		node := make([]interface{}, len(value))
-		for key, v := range value {
-			item, err := normalizeValue(v)
+		for index, v := range value {
+			currPath.Push(strconv.Itoa(index))
+			item, err := normalizeValue_2(currPath, v)
+			currPath.Pop()
 			if err != nil {
-				return nil, fmt.Errorf("041d7d49553d unsupported list item: %#v", v)
+				return nil, fmt.Errorf("041d7d49553d, at %v, unsupported list item: %v", currPath, err)
 			}
-			node[key] = item
+			node[index] = item
 		}
 		return node, nil
 	case bool, float64, int, string, nil:
 		return value, nil
 	}
-	return nil, fmt.Errorf("93be153f9ee1 unsupported type: %T", value)
+	return nil, fmt.Errorf("93be153f9ee1, at %v, unsupported type: %T", currPath, value)
 }
