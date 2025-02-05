@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/rusriver/nutz/controlflow"
@@ -37,6 +38,7 @@ func (c *Config) ChildCopy() (c2 *Config) {
 			OkPtr:                  c.OkPtr,
 			ErrPtr:                 c.ErrPtr,
 			ExpressionStatus:       c.ExpressionStatus,
+			RTag:                   c.RTag,
 			dontPanicFlag:          c.dontPanicFlag,
 			Source:                 c.Source,
 			InitContext:            c.InitContext,
@@ -119,6 +121,7 @@ func (c *Config) handleError(err error) {
 			*c.OkPtr = false
 		}
 		if c.ErrPtr == nil && c.OkPtr == nil && !c.dontPanicFlag {
+			fmt.Println("++234", c.RTag)
 			controlflow.Raise2(c.RTag, err)
 		}
 	}
