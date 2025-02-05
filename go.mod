@@ -1,14 +1,21 @@
 module github.com/rusriver/config/v2
 
-go 1.18
+go 1.22
 
-require github.com/rs/zerolog v1.29.1
+toolchain go1.23.4
+
+require (
+	github.com/rs/zerolog v1.33.0
+	github.com/rusriver/nutz v1.60.0
+)
+
+require github.com/rogpeppe/go-internal v1.13.1 // indirect
 
 require (
 	github.com/dustin/go-humanize v1.0.1
-	github.com/mattn/go-colorable v0.1.12 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/rusriver/dateparse v1.1.0
-	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
 )

@@ -3,6 +3,8 @@ package config
 import (
 	"bytes"
 	"strings"
+
+	"github.com/rusriver/nutz/controlflow"
 )
 
 // Config represents a configuration with convenient access methods.
@@ -11,6 +13,7 @@ type Config struct {
 	OkPtr                  *bool
 	ErrPtr                 *error
 	ExpressionStatus       ExpressionFailure
+	RTag                   string
 	dontPanicFlag          bool
 	Source                 *Source      `json:"-"`
 	InitContext            *InitContext `json:"-"`
@@ -116,7 +119,7 @@ func (c *Config) handleError(err error) {
 			*c.OkPtr = false
 		}
 		if c.ErrPtr == nil && c.OkPtr == nil && !c.dontPanicFlag {
-			panic(err)
+			controlflow.Raise2(c.RTag, err)
 		}
 	}
 }
@@ -194,11 +197,12 @@ func (c *Config) UnU() (c2 *Config) {
 }
 
 // Useful if you want to work with exceptions
-func (c *Config) Raisable() (c2 *Config) {
+func (c *Config) RaisableWithTag(tag string) (c2 *Config) {
 	c2 = c.ChildCopy()
 	c2.dontPanicFlag = false
 	c2.ErrPtr = nil
 	c2.OkPtr = nil
+	c2.RTag = tag
 	return c2
 }
 
