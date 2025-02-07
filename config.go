@@ -77,13 +77,20 @@ func (c *Config) P(pathParts ...string) *Config {
 	c2.relativePathFromParent = pathParts
 	return c2
 }
-
 func (c *Config) DotP(path string) *Config {
 	return c.P(strings.Split(path, ".")...)
 }
-
+func (c *Config) PP(path string) *Config {
+	return c.P(strings.Split(path, ".")...)
+}
 func (c *Config) SlashP(path string) *Config {
 	return c.P(strings.Split(path, "/")...)
+}
+
+// can be used to explicitly augment the current path
+func (c *Config) At(pathParts ...string) *Config {
+	c.relativePathFromParent = pathParts
+	return c
 }
 
 // Resets any errors, accumulated in previous expressions on this Config object.

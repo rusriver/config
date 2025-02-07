@@ -26,8 +26,8 @@ func (c *Config) ListConfig() []*Config {
 	l := c.List()
 
 	l2 := make([]*Config, 0, len(l))
-	for _, v := range l {
-		c2 := c.ChildCopy()
+	for i, v := range l {
+		c2 := c.ChildCopy().At(strconv.Itoa(i))
 		c2.DataSubTree = v
 		l2 = append(l2, c2)
 	}

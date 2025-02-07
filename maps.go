@@ -27,7 +27,7 @@ func (c *Config) MapConfig() map[string]*Config {
 
 	m2 := make(map[string]*Config, len(m))
 	for k, v := range m {
-		m2[k] = c.ChildCopy()
+		m2[k] = c.ChildCopy().At(k)
 		m2[k].DataSubTree = v
 	}
 
