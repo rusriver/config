@@ -2,7 +2,6 @@ package config
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 
 	"github.com/rusriver/nutz/controlflow"
@@ -121,7 +120,6 @@ func (c *Config) handleError(err error) {
 			*c.OkPtr = false
 		}
 		if c.ErrPtr == nil && c.OkPtr == nil && !c.dontPanicFlag {
-			fmt.Println("++234", c.RTag)
 			controlflow.Raise2(c.RTag, err)
 		}
 	}
