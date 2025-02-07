@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/rs/zerolog v1.33.0
-	github.com/rusriver/nutz v1.60.0
+	github.com/rusriver/nutz v1.63.0
 )
 
 require github.com/rogpeppe/go-internal v1.13.1 // indirect
