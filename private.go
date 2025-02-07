@@ -58,14 +58,14 @@ func goByPath(c interface{}, pathParts []string) (interface{}, error) {
 						strings.Join(pathParts[:pos+1], "."), len(cv))
 				}
 			} else {
-				return nil, fmt.Errorf("5994f468d210 invalid list index at '%v'",
+				return nil, fmt.Errorf("5994f468d210 invalid list index '%v'",
 					strings.Join(pathParts[:pos+1], "."))
 			}
 		case map[string]interface{}:
 			if value, ok := cv[part]; ok {
 				c = value
 			} else {
-				return nil, fmt.Errorf("e6269413b51b nonexistent map key at '%v'",
+				return nil, fmt.Errorf("e6269413b51b nonexistent map key '%v'",
 					strings.Join(pathParts[:pos+1], "."))
 			}
 		default:
