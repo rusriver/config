@@ -41,7 +41,7 @@ func goByPath(c interface{}, pathParts []string) (interface{}, error) {
 			if k == 0 {
 				pathParts = pathParts[1:]
 			} else {
-				return nil, fmt.Errorf("4943420f0e61 invalid path %q", strings.Join(pathParts, "."))
+				return nil, fmt.Errorf("4943420f0e61 invalid path '%v'", strings.Join(pathParts, "."))
 			}
 		}
 	}
@@ -54,23 +54,23 @@ func goByPath(c interface{}, pathParts []string) (interface{}, error) {
 					c = cv[i]
 				} else {
 					return nil, fmt.Errorf(
-						"c468dae22fc6 index out of range at %q: list has only %v items",
+						"c468dae22fc6 index out of range at '%v': list has only %v items",
 						strings.Join(pathParts[:pos+1], "."), len(cv))
 				}
 			} else {
-				return nil, fmt.Errorf("5994f468d210 invalid list index at %q",
+				return nil, fmt.Errorf("5994f468d210 invalid list index at '%v'",
 					strings.Join(pathParts[:pos+1], "."))
 			}
 		case map[string]interface{}:
 			if value, ok := cv[part]; ok {
 				c = value
 			} else {
-				return nil, fmt.Errorf("e6269413b51b nonexistent map key at %q",
+				return nil, fmt.Errorf("e6269413b51b nonexistent map key at '%v'",
 					strings.Join(pathParts[:pos+1], "."))
 			}
 		default:
 			return nil, fmt.Errorf(
-				"51a5d1f36f0f invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
+				"51a5d1f36f0f invalid type at '%v': expected []interface{} or map[string]interface{}; got %T",
 				strings.Join(pathParts[:pos+1], "."), c)
 		}
 	}
@@ -86,7 +86,7 @@ func set(c interface{}, pathParts []string, value interface{}) error {
 			if k == 0 {
 				pathParts = pathParts[1:]
 			} else {
-				return fmt.Errorf("c483d3a81d6f invalid path %q", pathParts)
+				return fmt.Errorf("c483d3a81d6f invalid path '%v'", pathParts)
 			}
 		}
 	}
@@ -148,7 +148,7 @@ func set(c interface{}, pathParts []string, value interface{}) error {
 				}
 
 			} else {
-				return fmt.Errorf("cd1082229809 invalid list index at %q",
+				return fmt.Errorf("cd1082229809 invalid list index at '%v'",
 					strings.Join(pathParts[:pathPart_i+1], "."))
 			}
 
@@ -202,7 +202,7 @@ func set(c interface{}, pathParts []string, value interface{}) error {
 
 		default:
 			return fmt.Errorf(
-				"12decb88247a invalid type at %q: expected []interface{} or map[string]interface{}; got %T",
+				"12decb88247a invalid type at '%v': expected []interface{} or map[string]interface{}; got %T",
 				strings.Join(pathParts[:pathPart_i+1], "."), now_typed)
 		}
 	}
