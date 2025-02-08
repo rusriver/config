@@ -7,16 +7,20 @@ import (
 
 	// "github.com/lithammer/shortuuid/v3"
 	"github.com/rusriver/config/v2/deepcopy"
+	"github.com/rusriver/nutz/controlflow"
 )
 
 func (c *Config) TheIsa() {
+	if c.ErrPtr == nil && c.OkPtr == nil && c.dontPanicFlag {
+		controlflow.Raise2(c.RTag, "4c82b5eaf5b88f268deb error: TheIsa() called without any kind of error handling")
+	}
 	ctx := &TreeTraversalContext{
 		root:            c,
 		antiLoopMap:     make(map[string]bool),
 		currentLocation: &Location{},
 	}
 	ctx.resolveRelativePaths_TreeTraversal("", c.DataSubTree)
-	// c.PrintJson("============== $isa middle") //--==
+	// c.PrintJson("============== $isa middle")
 	c.DataSubTree = ctx.applyTheIsa_TreeTraversal("", c.DataSubTree)
 }
 

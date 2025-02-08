@@ -1,0 +1,7 @@
+objects:
+    defaults:
+        a: 1
+        b: 2
+    o1:
+        $isa: ^.default
+        name: o1

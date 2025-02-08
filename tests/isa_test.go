@@ -5,13 +5,15 @@ import (
 	"testing"
 
 	"github.com/rusriver/config/v2"
+	"github.com/rusriver/nutz/controlflow"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Isa_1_0(t *testing.T) {
 	c1 := (&config.InitContext{}).FromFile(
 		"conf-test-files/isa/20240901-1.yaml",
 		"vbhs-_LYSsdYDtCtLwZ22gcr4_jLa_EBPz96VtwdIYY=",
-	).Load().U()
+	).Load()
 	fmt.Println("CONFIG HASHES:", c1.InitContext.SourceHashesActual)
 	c1.PrintJson("ORIGINAL")
 	c1.TheIsa()
@@ -33,7 +35,7 @@ func Test_Isa_2_0(t *testing.T) {
 	c1 := (&config.InitContext{}).FromFile(
 		"conf-test-files/isa/20240901-2.yaml",
 		"wNb6xZmKUNTDfdgryp9zOeFfShKgKKQUU-_zcpCgvL8=",
-	).Load().U()
+	).Load()
 	fmt.Println("CONFIG HASHES:", c1.InitContext.SourceHashesActual)
 	c1.PrintJson("ORIGINAL")
 	c1.TheIsa()
@@ -61,7 +63,7 @@ func Test_Isa_3_0(t *testing.T) {
 		c1 := (&config.InitContext{}).FromFile(
 			"conf-test-files/isa/20240901-3.yaml",
 			"BlElOym7C1y7fSarkeMJKBnzBnVY1k_yRtUE20tAnqk=",
-		).Load().U()
+		).Load()
 		if i == 0 {
 			fmt.Println("CONFIG HASHES:", c1.InitContext.SourceHashesActual)
 			c1.PrintJson("ORIGINAL")
@@ -97,7 +99,7 @@ func Test_Isa_4_0(t *testing.T) {
 		c1 := (&config.InitContext{}).FromFile(
 			"conf-test-files/isa/20240901-4.yaml",
 			"zhP2hYQrqGiKBbfj0OH9WmxCniZuAHYOnhcNfP8BBio=",
-		).Load().U()
+		).Load()
 		if i == 0 {
 			fmt.Println("CONFIG HASHES:", c1.InitContext.SourceHashesActual)
 			c1.PrintJson("ORIGINAL")
@@ -127,4 +129,29 @@ func Test_Isa_4_0(t *testing.T) {
 			break
 		}
 	}
+}
+
+func Test_Isa_5_0(t *testing.T) {
+	c1 := (&config.InitContext{}).FromFile(
+		"conf-test-files/isa/20250207-5.yaml",
+		"E4IbXdtpjGTVga8YskqYVOgN_1jJ-1Si0BXG44_1XcU=",
+	).Load().U()
+	fmt.Println("CONFIG HASHES:", c1.InitContext.SourceHashesActual)
+	c1.PrintJson("ORIGINAL")
+
+	controlflow.Try(func() (err error) {
+		c1.TheIsa()
+		return
+	}).Catch(func(e *controlflow.Exception) {
+		require.Equal(t, " 4c82b5eaf5b88f268deb error: TheIsa() called without any kind of error handling", e.String())
+	})
+
+	controlflow.Try(func() (err error) {
+		c1.UnU().TheIsa()
+		return
+	}).Catch(func(e *controlflow.Exception) {
+		require.Equal(t, " e6269413b51b nonexistent map key 'objects.default'", e.String())
+	})
+
+	c1.PrintJson("RESULT")
 }

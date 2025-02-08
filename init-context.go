@@ -70,7 +70,7 @@ func (ic *InitContext) Load() *Config {
 			hasher.Write(ic.Data)
 			hash = base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 			if !ic.sourceHashIsCorrect(hash) {
-				err = fmt.Errorf("c6d2d486b761 incorrect integrity hash '%v' at data", hash)
+				err = fmt.Errorf("c6d2d486b761 incorrect integrity hash '%v' of data object", hash)
 				return
 			}
 
@@ -97,7 +97,7 @@ func (ic *InitContext) Load() *Config {
 			}
 			hash = base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 			if !ic.sourceHashIsCorrect(hash) {
-				err = fmt.Errorf("88085ecfd247 incorrect integrity hash '%v' at file '%v'", hash, ic.CurrentFileName)
+				err = fmt.Errorf("88085ecfd247 incorrect integrity hash '%v' of file '%v'", hash, ic.CurrentFileName)
 				return
 			}
 
