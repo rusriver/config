@@ -1,5 +1,4 @@
-### todo:
-- repair old original tests
+# The project has been archived, sealed, never gonna change. The new developments shifted to the https://github.com/rusriver/configdb. Please consider migrating.
 
 ---
 
